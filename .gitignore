@@ -3,3 +3,14 @@ __pycache__/
 node_modules/
 .env
 .vscode/settings.json
+
+# Logs
+logs/
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Environment
+.env

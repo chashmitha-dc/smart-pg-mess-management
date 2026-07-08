@@ -2,9 +2,11 @@ from config.database import db
 
 
 class Complaint(db.Model):
+    """SQLAlchemy model for the complaint table."""
+
     __tablename__ = "complaint"
 
-    complaint_id = db.Column(db.Integer, primary_key=True)
+    complaint_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     member_id = db.Column(
         db.Integer,
         db.ForeignKey("member.member_id", ondelete="CASCADE"),
@@ -13,8 +15,8 @@ class Complaint(db.Model):
     category = db.Column(db.String(50), nullable=False)
     description = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(20), nullable=False, default="open")
-    created_at = db.Column(db.TIMESTAMP, default=db.func.current_timestamp())
-    resolved_at = db.Column(db.TIMESTAMP, nullable=True)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+    resolved_at = db.Column(db.DateTime, nullable=True)
 
     member = db.relationship("Member", back_populates="complaints")
 

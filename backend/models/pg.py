@@ -1,10 +1,12 @@
 from config.database import db
 
 
-class Pg(db.Model):
+class PG(db.Model):
+    """SQLAlchemy model for the pg table."""
+
     __tablename__ = "pg"
 
-    pg_id = db.Column(db.Integer, primary_key=True)
+    pg_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     owner_id = db.Column(
         db.Integer,
         db.ForeignKey("owner.owner_id", ondelete="CASCADE"),
@@ -15,7 +17,7 @@ class Pg(db.Model):
     address = db.Column(db.Text, nullable=True)
     upi_id = db.Column(db.String(100), nullable=True)
     absence_threshold = db.Column(db.Integer, nullable=False, default=7)
-    created_at = db.Column(db.TIMESTAMP, default=db.func.current_timestamp())
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
     owner = db.relationship("Owner", back_populates="pg")
     meal_prices = db.relationship(
@@ -40,4 +42,4 @@ class Pg(db.Model):
     )
 
     def __repr__(self):
-        return f"<Pg pg_id={self.pg_id} pg_name={self.pg_name}>"
+        return f"<PG pg_id={self.pg_id} pg_name={self.pg_name}>"

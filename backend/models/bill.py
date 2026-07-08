@@ -2,9 +2,11 @@ from config.database import db
 
 
 class Bill(db.Model):
+    """SQLAlchemy model for the bill table."""
+
     __tablename__ = "bill"
 
-    bill_id = db.Column(db.Integer, primary_key=True)
+    bill_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     member_id = db.Column(
         db.Integer,
         db.ForeignKey("member.member_id", ondelete="CASCADE"),
@@ -20,7 +22,7 @@ class Bill(db.Model):
     paid_amount = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)
     balance_amount = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)
     status = db.Column(db.String(20), nullable=False, default="pending")
-    generated_at = db.Column(db.TIMESTAMP, default=db.func.current_timestamp())
+    generated_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
     member = db.relationship("Member", back_populates="bills")
     payments = db.relationship(

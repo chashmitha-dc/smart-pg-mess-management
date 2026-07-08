@@ -2,9 +2,11 @@ from config.database import db
 
 
 class MealPlan(db.Model):
+    """SQLAlchemy model for the meal_plan table."""
+
     __tablename__ = "meal_plan"
 
-    plan_id = db.Column(db.Integer, primary_key=True)
+    plan_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     pg_id = db.Column(
         db.Integer,
         db.ForeignKey("pg.pg_id", ondelete="CASCADE"),
@@ -16,7 +18,7 @@ class MealPlan(db.Model):
     dinner = db.Column(db.Boolean, nullable=False, default=False)
     active = db.Column(db.Boolean, nullable=False, default=True)
 
-    pg = db.relationship("Pg", back_populates="meal_plans")
+    pg = db.relationship("PG", back_populates="meal_plans")
     members = db.relationship(
         "Member",
         back_populates="current_plan",

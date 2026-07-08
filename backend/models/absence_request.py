@@ -2,9 +2,11 @@ from config.database import db
 
 
 class AbsenceRequest(db.Model):
+    """SQLAlchemy model for the absence_request table."""
+
     __tablename__ = "absence_request"
 
-    absence_id = db.Column(db.Integer, primary_key=True)
+    absence_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     member_id = db.Column(
         db.Integer,
         db.ForeignKey("member.member_id", ondelete="CASCADE"),
@@ -14,7 +16,7 @@ class AbsenceRequest(db.Model):
     to_date = db.Column(db.Date, nullable=False)
     reason = db.Column(db.Text, nullable=True)
     status = db.Column(db.String(20), nullable=False, default="pending")
-    requested_at = db.Column(db.TIMESTAMP, default=db.func.current_timestamp())
+    requested_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
     member = db.relationship("Member", back_populates="absence_requests")
 

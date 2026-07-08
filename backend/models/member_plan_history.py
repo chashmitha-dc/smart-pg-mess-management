@@ -2,9 +2,11 @@ from config.database import db
 
 
 class MemberPlanHistory(db.Model):
+    """SQLAlchemy model for the member_plan_history table."""
+
     __tablename__ = "member_plan_history"
 
-    history_id = db.Column(db.Integer, primary_key=True)
+    history_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     member_id = db.Column(
         db.Integer,
         db.ForeignKey("member.member_id", ondelete="CASCADE"),

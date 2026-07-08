@@ -2,9 +2,11 @@ from config.database import db
 
 
 class FoodPrediction(db.Model):
+    """SQLAlchemy model for the food_prediction table."""
+
     __tablename__ = "food_prediction"
 
-    prediction_id = db.Column(db.Integer, primary_key=True)
+    prediction_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     pg_id = db.Column(
         db.Integer,
         db.ForeignKey("pg.pg_id", ondelete="CASCADE"),
@@ -19,7 +21,7 @@ class FoodPrediction(db.Model):
     actual_dinner = db.Column(db.Integer, nullable=False, default=0)
     accuracy = db.Column(db.Numeric(5, 2), nullable=True)
 
-    pg = db.relationship("Pg", back_populates="food_predictions")
+    pg = db.relationship("PG", back_populates="food_predictions")
 
     def __repr__(self):
         return f"<FoodPrediction prediction_id={self.prediction_id} date={self.prediction_date}>"

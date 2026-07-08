@@ -1,11 +1,14 @@
-from config.database import db
 from datetime import date
+
+from config.database import db
 
 
 class Member(db.Model):
+    """SQLAlchemy model for the member table."""
+
     __tablename__ = "member"
 
-    member_id = db.Column(db.Integer, primary_key=True)
+    member_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     pg_id = db.Column(
         db.Integer,
         db.ForeignKey("pg.pg_id", ondelete="CASCADE"),
@@ -24,7 +27,7 @@ class Member(db.Model):
     next_billing_date = db.Column(db.Date, nullable=False, default=date.today)
     status = db.Column(db.String(20), nullable=False, default="active")
 
-    pg = db.relationship("Pg", back_populates="members")
+    pg = db.relationship("PG", back_populates="members")
     current_plan = db.relationship(
         "MealPlan",
         back_populates="members",

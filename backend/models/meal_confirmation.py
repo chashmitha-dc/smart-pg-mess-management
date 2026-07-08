@@ -2,9 +2,11 @@ from config.database import db
 
 
 class MealConfirmation(db.Model):
+    """SQLAlchemy model for the meal_confirmation table."""
+
     __tablename__ = "meal_confirmation"
 
-    confirmation_id = db.Column(db.Integer, primary_key=True)
+    confirmation_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     member_id = db.Column(
         db.Integer,
         db.ForeignKey("member.member_id", ondelete="CASCADE"),
@@ -14,7 +16,7 @@ class MealConfirmation(db.Model):
     breakfast = db.Column(db.Boolean, nullable=False, default=False)
     lunch = db.Column(db.Boolean, nullable=False, default=False)
     dinner = db.Column(db.Boolean, nullable=False, default=False)
-    confirmed_at = db.Column(db.TIMESTAMP, default=db.func.current_timestamp())
+    confirmed_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
     member = db.relationship("Member", back_populates="meal_confirmations")
 

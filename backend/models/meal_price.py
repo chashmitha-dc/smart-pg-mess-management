@@ -2,9 +2,11 @@ from config.database import db
 
 
 class MealPrice(db.Model):
+    """SQLAlchemy model for the meal_price table."""
+
     __tablename__ = "meal_price"
 
-    price_id = db.Column(db.Integer, primary_key=True)
+    price_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     pg_id = db.Column(
         db.Integer,
         db.ForeignKey("pg.pg_id", ondelete="CASCADE"),
@@ -16,7 +18,7 @@ class MealPrice(db.Model):
     effective_from = db.Column(db.Date, nullable=False)
     active = db.Column(db.Boolean, nullable=False, default=True)
 
-    pg = db.relationship("Pg", back_populates="meal_prices")
+    pg = db.relationship("PG", back_populates="meal_prices")
 
     def __repr__(self):
         return f"<MealPrice price_id={self.price_id} pg_id={self.pg_id}>"

@@ -2,9 +2,11 @@ from config.database import db
 
 
 class Notification(db.Model):
+    """SQLAlchemy model for the notification table."""
+
     __tablename__ = "notification"
 
-    notification_id = db.Column(db.Integer, primary_key=True)
+    notification_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     member_id = db.Column(
         db.Integer,
         db.ForeignKey("member.member_id", ondelete="CASCADE"),
@@ -14,7 +16,7 @@ class Notification(db.Model):
     message = db.Column(db.Text, nullable=False)
     type = db.Column(db.String(30), nullable=False)
     is_read = db.Column(db.Boolean, nullable=False, default=False)
-    created_at = db.Column(db.TIMESTAMP, default=db.func.current_timestamp())
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
     member = db.relationship("Member", back_populates="notifications")
 

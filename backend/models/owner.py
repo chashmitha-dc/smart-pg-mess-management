@@ -11,6 +11,9 @@ class Owner(db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False)
     phone = db.Column(db.String(15), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
+    profile_photo = db.Column(db.Text, nullable=True)
+    reset_token = db.Column(db.String(255), nullable=True)
+    reset_token_expires = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
     pg = db.relationship(

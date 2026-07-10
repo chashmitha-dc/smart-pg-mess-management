@@ -21,11 +21,17 @@ class Member(db.Model):
     )
     member_name = db.Column(db.String(100), nullable=False)
     phone = db.Column(db.String(20), nullable=False)
-    emergency_contact = db.Column(db.String(20), nullable=False)
+    emergency_contact = db.Column(db.String(20), nullable=True)
     joining_date = db.Column(db.Date, nullable=False, default=date.today)
     billing_start_date = db.Column(db.Date, nullable=False, default=date.today)
     next_billing_date = db.Column(db.Date, nullable=False, default=date.today)
     status = db.Column(db.String(20), nullable=False, default="active")
+    password = db.Column(db.String(255), nullable=True)
+    profile_image = db.Column(db.Text, nullable=True)
+    last_login = db.Column(db.DateTime, nullable=True)
+    is_first_login = db.Column(db.Boolean, default=True, nullable=False)
+    reset_token = db.Column(db.String(255), nullable=True)
+    reset_token_expires = db.Column(db.DateTime, nullable=True)
 
     pg = db.relationship("PG", back_populates="members")
     current_plan = db.relationship(

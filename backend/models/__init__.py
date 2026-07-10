@@ -12,3 +12,4 @@ from .complaint import Complaint
 from .notification import Notification
 from .food_prediction import FoodPrediction
 from .member_exit import MemberExit
+from .menu import Menu

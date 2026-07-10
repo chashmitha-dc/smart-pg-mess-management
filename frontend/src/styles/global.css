@@ -1,0 +1,118 @@
+/* Global Premium Reset & Custom Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Outfit', 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  transition: background-color 0.3s ease;
+}
+
+/* Beautiful Custom Smooth Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+/* Keyframes for soft entrance micro-animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Application entry animations */
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease forwards;
+}
+
+/* MUI Customizations Utility Helpers */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+/* Fix MUI date input placeholder overlap with label when empty and unfocused */
+input[type="date"] {
+  position: relative;
+}
+
+/* Hide date placeholder text when field is empty and not focused */
+input[type="date"]::-webkit-datetime-edit {
+  color: transparent !important;
+}
+
+input[type="date"]:focus::-webkit-datetime-edit,
+input[type="date"]:not([value=""])::-webkit-datetime-edit,
+input[type="date"].MuiOutlinedInput-input::-webkit-datetime-edit {
+  /* Show date format when focused or has value or has explicit MUI class */
+  color: inherit !important;
+}
+
+/* When the label is shrunk or field is focused, show placeholder */
+.Mui-focused input[type="date"]::-webkit-datetime-edit,
+.MuiInputLabel-shrink ~ .MuiInputBase-root input[type="date"]::-webkit-datetime-edit {
+  color: inherit !important;
+}
+
+/* Force MUI label to shrink on date inputs and float above input box notch */
+.MuiFormControl-root:has(input[type="date"]) .MuiInputLabel-root {
+  transform: translate(14px, -9px) scale(0.75) !important;
+  transform-origin: top left;
+  background-color: #ffffff !important;
+  padding: 0 6px !important;
+  z-index: 1;
+}
+
+.dark .MuiFormControl-root:has(input[type="date"]) .MuiInputLabel-root {
+  background-color: #1e293b !important;
+  color: #94a3b8 !important;
+}
+
+/* Also ensure legend notched outline matches correct label width */
+.MuiFormControl-root:has(input[type="date"]) .MuiOutlinedInput-notchedOutline legend {
+  max-width: 100% !important;
+}
+
+

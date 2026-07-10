@@ -45,8 +45,8 @@ app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_USERNAME", "noreply@smartpg.
 CORS(app, resources={r"/api/*": {"origins": [
     "http://localhost:5173",
     "http://localhost:3000",
+    "https://smart-pg-mess-management-bay.vercel.app",
     "https://smartpg-frontend.vercel.app",
-    # Vercel preview URLs follow this pattern:
     "https://*.vercel.app",
     os.getenv("FRONTEND_URL", ""),
 ]}}, supports_credentials=True)

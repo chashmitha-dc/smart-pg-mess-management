@@ -27,6 +27,6 @@ services:
       - key: PYTHONIOENCODING
         value: utf-8
       - key: FRONTEND_URL
-        value: https://smartpg-frontend.vercel.app
+        value: https://smart-pg-mess-management-bay.vercel.app
       - key: WEB_CONCURRENCY
         value: "1"

@@ -42,7 +42,14 @@ app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD", "")
 app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_USERNAME", "noreply@smartpg.com")
 
 # Initialize extensions
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://smartpg-frontend.vercel.app",
+    # Vercel preview URLs follow this pattern:
+    "https://*.vercel.app",
+    os.getenv("FRONTEND_URL", ""),
+]}}, supports_credentials=True)
 db.init_app(app)
 jwt = JWTManager(app)
 init_mail(app)

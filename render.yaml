@@ -1,24 +1,32 @@
 services:
-  # Backend Flask API on Render (Free tier)
+  # Backend Flask API — Docker runtime on Render Free tier
   - type: web
     name: smartpg-backend
-    runtime: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn --bind 0.0.0.0:$PORT --workers 2 --timeout 120 app:app
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
     envVars:
       - key: DATABASE_URL
-        sync: false          # Set this manually in Render dashboard → Neon DB URL
+        sync: false          # Add Neon connection string in Render dashboard
       - key: JWT_SECRET_KEY
         value: a382bbbb8abbd01d85d1f9d726688b53a68fb526d5165a169e8ac3c2c12bfab0
+      - key: SECRET_KEY
+        value: smartpgsecretkey_render_2026
       - key: MAIL_SERVER
         value: smtp.gmail.com
       - key: MAIL_PORT
-        value: 587
+        value: "587"
       - key: MAIL_USE_TLS
-        value: true
+        value: "true"
+      - key: MAIL_USE_SSL
+        value: "false"
       - key: MAIL_USERNAME
-        sync: false          # Set this in Render dashboard (optional)
+        sync: false          # Add in Render dashboard
       - key: MAIL_PASSWORD
-        sync: false          # Set this in Render dashboard (optional)
-      - key: PYTHON_VERSION
-        value: 3.11.0
+        sync: false          # Add in Render dashboard
+      - key: PYTHONIOENCODING
+        value: utf-8
+      - key: FRONTEND_URL
+        value: https://smartpg-frontend.vercel.app
+      - key: WEB_CONCURRENCY
+        value: "1"

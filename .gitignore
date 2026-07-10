@@ -1,5 +1,6 @@
 __pycache__/
 *.pyc
+*.pyo
 node_modules/
 .env
 .vscode/settings.json
@@ -9,8 +10,18 @@ logs/
 
 # Python
 venv/
-__pycache__/
 *.pyc
 
 # Environment
 .env
+.env.*
+
+# ML model binaries (large files — trained locally or on Render)
+# Comment out the line below if you want to keep the model in git
+# backend/ml/*.pkl
+
+# Uploaded user files
+backend/uploads/
+
+# Dev scratch scripts
+backend/scratch/

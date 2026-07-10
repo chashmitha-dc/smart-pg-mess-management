@@ -1,0 +1,33 @@
+# Files/directories to exclude from Docker build context
+# Keeps image small and build fast
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Virtual environment (NEVER copy into image)
+venv/
+env/
+.venv/
+
+# Development env file (secrets not for Docker)
+.env
+.env.*
+
+# Git
+.git/
+.gitignore
+
+# Scratch / temp files
+scratch/
+tests/
+*.log
+
+# Large uploaded files
+uploads/
+
+# Test artifacts
+*.pytest_cache/

@@ -22,7 +22,7 @@ import Billing from "../pages/billing/billing";
 import Payments from "../pages/payments/payments";
 import Complaints from "../pages/complaints/complaints";
 import Notifications from "../pages/notification/notification";
-import AI from "../pages/AI/AI";
+import AI from "../pages/ai/ai";
 
 // Member Portal Imports
 import MemberLayout from "../layouts/MemberLayout";

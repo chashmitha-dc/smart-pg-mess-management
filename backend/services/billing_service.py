@@ -11,7 +11,10 @@ from models.meal_plan import MealPlan
 from models.meal_price import MealPrice
 from models.member import Member
 from models.pg import PG
+from models.notification import Notification
 from utils.response import error_response, success_response
+from utils.sms_utils import send_bill_notification_sms
+from utils.email_utils import send_bill_reminder_email
 
 
 def _get_owner_pg():
@@ -71,12 +74,17 @@ def generate_member_bill(member_id):
 
 
 def generate_all_bills():
-    """Generate bills for every active member in the owner's PG."""
+    """Generate bills for every due active member in the owner's PG."""
     pg, error = _get_owner_pg()
     if error:
         return error
 
-    members = Member.query.filter_by(pg_id=pg.pg_id, status="active").all()
+    # Only retrieve active members whose next billing date has arrived
+    members = Member.query.filter(
+        Member.pg_id == pg.pg_id,
+        Member.status == "active",
+        Member.next_billing_date <= date.today()
+    ).all()
 
     created_bills = []
     skipped_members = 0
@@ -209,6 +217,38 @@ def _generate_bill_for_member(member, pg, billing_period_start, billing_period_e
     )
 
     db.session.add(new_bill)
+
+    # Notify member about generated bill
+    notification = Notification(
+        member_id=member.member_id,
+        title="New Bill Generated",
+        message=f"Your bill of ₹{final_amount:.2f} for the period {billing_period_start.strftime('%d %b %Y')} to {billing_period_end.strftime('%d %b %Y')} has been generated.",
+        type="bill",
+        is_read=False
+    )
+    db.session.add(notification)
+
+    # Send simulated SMS to member
+    if member.phone:
+        send_bill_notification_sms(
+            phone=member.phone,
+            member_name=member.member_name,
+            amount=final_amount,
+            start_date=billing_period_start,
+            end_date=billing_period_end
+        )
+
+    # Send email reminder to member if configured
+    if member.email:
+        send_bill_reminder_email(
+            to_email=member.email,
+            member_name=member.member_name,
+            amount=final_amount,
+            start_date=billing_period_start,
+            end_date=billing_period_end,
+            pg_name=pg.pg_name if pg else "SmartPG"
+        )
+
     db.session.commit()
 
     return new_bill, None
@@ -269,3 +309,50 @@ def get_bill(bill_id):
         "Bill fetched successfully",
         data=_build_bill_payload(bill),
     )
+
+
+def get_due_billing_members_list(pg_id):
+    """Return a list of active members whose billing cycle is complete and due."""
+    members = Member.query.filter_by(pg_id=pg_id, status="active").all()
+    due_list = []
+    
+    today_val = date.today()
+    for member in members:
+        if today_val >= member.next_billing_date:
+            billing_period_start, billing_period_end = _get_member_billing_period(member)
+            
+            # Calculate due amount
+            meal_plan = MealPlan.query.filter_by(
+                pg_id=pg_id,
+                plan_id=member.current_plan_id,
+            ).first()
+            
+            meal_price = MealPrice.query.filter_by(pg_id=pg_id, active=True).first()
+            
+            if not meal_plan or not meal_price:
+                continue
+                
+            daily_cost = 0.00
+            if meal_plan.breakfast and meal_price.breakfast_price is not None:
+                daily_cost += float(meal_price.breakfast_price)
+            if meal_plan.lunch and meal_price.lunch_price is not None:
+                daily_cost += float(meal_price.lunch_price)
+            if meal_plan.dinner and meal_price.dinner_price is not None:
+                daily_cost += float(meal_price.dinner_price)
+                
+            monthly_cost = daily_cost * 30
+            approved_leave_days = _get_approved_leave_days(
+                member.member_id,
+                billing_period_start,
+                billing_period_end,
+            )
+            absence_deduction = approved_leave_days * daily_cost
+            final_amount = monthly_cost - absence_deduction
+            
+            due_list.append({
+                "member_id": member.member_id,
+                "member_name": member.member_name,
+                "due_amount": float(final_amount),
+            })
+            
+    return due_list

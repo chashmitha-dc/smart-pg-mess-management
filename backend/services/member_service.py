@@ -37,6 +37,7 @@ def create_member(data):
         return error
 
     member_name = data.get("member_name")
+    email = data.get("email")
     phone = data.get("phone")
     emergency_contact = data.get("emergency_contact")
     current_plan_id = data.get("current_plan_id")
@@ -83,6 +84,7 @@ def create_member(data):
         pg_id=pg.pg_id,
         current_plan_id=current_plan_id,
         member_name=member_name,
+        email=email,
         phone=phone,
         emergency_contact=emergency_contact,
         joining_date=joining_date,
@@ -100,6 +102,7 @@ def create_member(data):
         data={
             "member_id": new_member.member_id,
             "member_name": new_member.member_name,
+            "email": new_member.email,
             "phone": new_member.phone,
             "current_plan_id": new_member.current_plan_id,
             "status": new_member.status,
@@ -121,6 +124,7 @@ def get_members():
         {
             "member_id": member.member_id,
             "member_name": member.member_name,
+            "email": member.email,
             "phone": member.phone,
             "emergency_contact": member.emergency_contact,
             "current_plan_id": member.current_plan_id,
@@ -150,6 +154,7 @@ def get_member(member_id):
         data={
             "member_id": member.member_id,
             "member_name": member.member_name,
+            "email": member.email,
             "phone": member.phone,
             "emergency_contact": member.emergency_contact,
             "current_plan_id": member.current_plan_id,
@@ -196,6 +201,9 @@ def update_member(member_id, data):
     if "member_name" in data:
         member.member_name = data["member_name"]
 
+    if "email" in data:
+        member.email = data["email"]
+
     if "emergency_contact" in data:
         member.emergency_contact = data["emergency_contact"]
 
@@ -216,6 +224,7 @@ def update_member(member_id, data):
         data={
             "member_id": member.member_id,
             "member_name": member.member_name,
+            "email": member.email,
             "phone": member.phone,
             "emergency_contact": member.emergency_contact,
             "current_plan_id": member.current_plan_id,
@@ -251,6 +260,7 @@ def get_member_profile():
         data={
             "member_id": member.member_id,
             "member_name": member.member_name,
+            "email": member.email,
             "phone": member.phone,
             "emergency_contact": member.emergency_contact,
             "current_plan_id": member.current_plan_id,

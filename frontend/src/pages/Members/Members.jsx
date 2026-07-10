@@ -62,6 +62,7 @@ function Members() {
 
   const initialForm = {
     member_name: "",
+    email: "",
     phone: "",
     emergency_contact: "",
     current_plan_id: "",
@@ -114,6 +115,7 @@ function Members() {
 
     setFormData({
       member_name: member.member_name,
+      email: member.email || "",
       phone: member.phone,
       emergency_contact: member.emergency_contact || "",
       current_plan_id: member.current_plan_id,

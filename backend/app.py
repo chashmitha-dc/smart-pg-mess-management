@@ -71,5 +71,6 @@ def home():
     }
 
 
+# Triggering reload for env variables
 if __name__ == "__main__":
     app.run(debug=True)

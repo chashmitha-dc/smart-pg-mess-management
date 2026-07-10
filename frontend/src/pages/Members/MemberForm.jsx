@@ -64,6 +64,18 @@ function MemberForm({
       <Grid item xs={12}>
         <TextField
           fullWidth
+          label="Email Address (Optional)"
+          name="email"
+          type="email"
+          value={formData.email || ""}
+          onChange={handleChange}
+          helperText="Used for sending bill reminders and notifications"
+        />
+      </Grid>
+
+      <Grid item xs={12}>
+        <TextField
+          fullWidth
           required
           label="Phone Number"
           name="phone"

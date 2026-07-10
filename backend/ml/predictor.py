@@ -5,7 +5,7 @@ Loads the trained ML model and predicts meal requirements.
 
 import os
 import joblib
-import numpy as np
+import pandas as pd
 
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -42,15 +42,13 @@ class SmartPGPredictor:
         Predict breakfast, lunch and dinner counts.
         """
 
-        features = np.array(
-            [[
-                active_members,
-                breakfast_plan_count,
-                lunch_plan_count,
-                dinner_plan_count,
-                approved_leave_count,
-            ]]
-        )
+        features = pd.DataFrame([{
+            "active_members": active_members,
+            "breakfast_plan_count": breakfast_plan_count,
+            "lunch_plan_count": lunch_plan_count,
+            "dinner_plan_count": dinner_plan_count,
+            "approved_leave_count": approved_leave_count,
+        }])
 
         prediction = self.model.predict(features)[0]
 

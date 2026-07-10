@@ -20,6 +20,7 @@ class Member(db.Model):
         nullable=False,
     )
     member_name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), nullable=True)
     phone = db.Column(db.String(20), nullable=False)
     emergency_contact = db.Column(db.String(20), nullable=True)
     joining_date = db.Column(db.Date, nullable=False, default=date.today)

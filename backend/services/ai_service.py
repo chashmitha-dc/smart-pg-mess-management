@@ -3,6 +3,7 @@
 from datetime import date, timedelta
 import os
 import subprocess
+import sys
 
 from flask_jwt_extended import get_jwt_identity
 
@@ -111,13 +112,13 @@ def train_ai_model():
     try:
 
         subprocess.run(
-            ["python", "ml/dataset_generator.py"],
+            [sys.executable, "ml/dataset_generator.py"],
             cwd=BACKEND_DIR,
             check=True,
         )
 
         subprocess.run(
-            ["python", "ml/train_model.py"],
+            [sys.executable, "ml/train_model.py"],
             cwd=BACKEND_DIR,
             check=True,
         )

@@ -25,6 +25,7 @@ import { useNavigate } from "react-router-dom";
 
 import { getDashboard } from "../../api/dashboardApi";
 import { getPayments } from "../../api/paymentApi";
+import { generateMemberBill, generateAllBills } from "../../api/billingApi";
 import { useAuth } from "../../hooks/useAuth";
 
 function Dashboard() {
@@ -34,6 +35,35 @@ function Dashboard() {
   const [dashboard, setDashboard] = useState(null);
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [generatingBill, setGeneratingBill] = useState(false);
+
+  const handleGenerateSingle = async (memberId) => {
+    setGeneratingBill(true);
+    try {
+      await generateMemberBill(memberId);
+      toast.success("Bill generated successfully and member notified!");
+      loadDashboard();
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || "Failed to generate bill");
+    } finally {
+      setGeneratingBill(false);
+    }
+  };
+
+  const handleGenerateAll = async () => {
+    setGeneratingBill(true);
+    try {
+      await generateAllBills();
+      toast.success("All due bills generated successfully and members notified!");
+      loadDashboard();
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || "Failed to generate due bills");
+    } finally {
+      setGeneratingBill(false);
+    }
+  };
 
   const loadDashboard = async () => {
     try {
@@ -206,6 +236,88 @@ function Dashboard() {
 
         </Grid>
       </Card>
+
+      {/* Billing Alerts Section */}
+      <Paper
+        elevation={0}
+        sx={{
+          p: 3.5,
+          borderRadius: 4,
+          border: "1px solid",
+          borderColor: dashboard?.due_billing_members?.length > 0 ? "#f59e0b" : "divider",
+          background: dashboard?.due_billing_members?.length > 0 ? "linear-gradient(135deg, #fffbeb 0%, #fffbeb 100%)" : "white",
+        }}
+      >
+        <Box display="flex" alignItems="center" justifyContent="space-between" mb={2} flexWrap="wrap" gap={2}>
+          <Box display="flex" alignItems="center" gap={1.5}>
+            <Typography variant="h5" sx={{ display: "flex", alignItems: "center", gap: 1, fontWeight: "bold", color: dashboard?.due_billing_members?.length > 0 ? "#b45309" : "text.primary" }}>
+              <span>🔔</span> Members Pending Billing
+            </Typography>
+          </Box>
+          <Button
+            variant="contained"
+            color="warning"
+            onClick={handleGenerateAll}
+            disabled={generatingBill || !dashboard?.due_billing_members || dashboard.due_billing_members.length === 0}
+            sx={{ borderRadius: 2, fontWeight: "bold" }}
+          >
+            {generatingBill ? "Generating..." : "Generate All Due Bills"}
+          </Button>
+        </Box>
+        <Divider sx={{ my: 1.5, borderColor: dashboard?.due_billing_members?.length > 0 ? "rgba(180, 83, 9, 0.15)" : "divider" }} />
+
+        {!dashboard?.due_billing_members || dashboard.due_billing_members.length === 0 ? (
+          <Box py={3} textAlign="center">
+            <Typography color="text.secondary">
+              All resident invoices are up to date. No pending billing cycles.
+            </Typography>
+          </Box>
+        ) : (
+          <Grid container spacing={2}>
+            {dashboard.due_billing_members.map((member) => (
+              <Grid item xs={12} sm={6} md={4} key={member.member_id}>
+                <Paper
+                  elevation={0}
+                  sx={{
+                    p: 2,
+                    borderRadius: 3,
+                    border: "1px solid",
+                    borderColor: "rgba(180, 83, 9, 0.2)",
+                    background: "white",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    transition: "all 0.2s ease-in-out",
+                    "&:hover": {
+                      boxShadow: "0 4px 12px rgba(180, 83, 9, 0.08)",
+                      borderColor: "#d97706"
+                    }
+                  }}
+                >
+                  <Box>
+                    <Typography variant="subtitle1" fontWeight="bold" color="text.primary">
+                      {member.member_name}
+                    </Typography>
+                    <Typography variant="h6" fontWeight="800" color="#b45309">
+                      ₹{member.due_amount.toFixed(2)}
+                    </Typography>
+                  </Box>
+                  <Button
+                    variant="outlined"
+                    color="warning"
+                    size="small"
+                    onClick={() => handleGenerateSingle(member.member_id)}
+                    disabled={generatingBill}
+                    sx={{ borderRadius: 2, textTransform: "none", fontWeight: "bold" }}
+                  >
+                    Generate Bill
+                  </Button>
+                </Paper>
+              </Grid>
+            ))}
+          </Grid>
+        )}
+      </Paper>
 
       {/* Grid of Stats Cards */}
       <Grid container spacing={3}>

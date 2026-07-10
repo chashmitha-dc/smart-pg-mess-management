@@ -10,6 +10,7 @@ def update():
         # Execute ALTER statements for columns
         try:
             db.session.execute(db.text("ALTER TABLE member ADD COLUMN IF NOT EXISTS password VARCHAR(255);"))
+            db.session.execute(db.text("ALTER TABLE member ADD COLUMN IF NOT EXISTS email VARCHAR(100);"))
             db.session.execute(db.text("ALTER TABLE member ADD COLUMN IF NOT EXISTS profile_image TEXT;"))
             db.session.execute(db.text("ALTER TABLE member ADD COLUMN IF NOT EXISTS last_login TIMESTAMP;"))
             db.session.execute(db.text("ALTER TABLE owner ADD COLUMN IF NOT EXISTS profile_photo TEXT;"))

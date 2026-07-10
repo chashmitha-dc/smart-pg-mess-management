@@ -60,6 +60,7 @@ function MemberTable({
           <TableRow>
             {renderSortableHeader("member_id", "ID")}
             {renderSortableHeader("member_name", "Member Name")}
+            {renderSortableHeader("email", "Email")}
             {renderSortableHeader("phone", "Phone")}
             {renderSortableHeader("current_plan_id", "Meal Plan")}
             {renderSortableHeader("joining_date", "Joining Date")}
@@ -74,6 +75,7 @@ function MemberTable({
             <TableRow key={member.member_id} hover>
               <TableCell>{member.member_id}</TableCell>
               <TableCell>{member.member_name}</TableCell>
+              <TableCell>{member.email || "-"}</TableCell>
               <TableCell>{member.phone}</TableCell>
               <TableCell>
                 {mealPlans.find((p) => p.plan_id === member.current_plan_id)?.plan_name ||

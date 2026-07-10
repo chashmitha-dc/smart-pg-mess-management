@@ -8,6 +8,7 @@ from models.complaint import Complaint
 from models.food_prediction import FoodPrediction
 
 from utils.response import success_response, error_response
+from services.billing_service import get_due_billing_members_list
 
 from sqlalchemy import func
 
@@ -26,7 +27,8 @@ def dashboard_summary():
                 "pending_bills": 0,
                 "open_complaints": 0,
                 "todays_notifications": 0,
-                "prediction": None
+                "prediction": None,
+                "due_billing_members": []
             }
         )
 
@@ -91,6 +93,8 @@ def dashboard_summary():
             "dinner": latest_prediction.expected_dinner
         }
 
+    due_billing_members = get_due_billing_members_list(pg.pg_id)
+
     return success_response(
         "Dashboard fetched successfully",
         data={
@@ -100,6 +104,7 @@ def dashboard_summary():
             "pending_bills": pending_bills,
             "open_complaints": open_complaints,
             "todays_notifications": todays_notifications,
-            "prediction": prediction
+            "prediction": prediction,
+            "due_billing_members": due_billing_members
         }
     )

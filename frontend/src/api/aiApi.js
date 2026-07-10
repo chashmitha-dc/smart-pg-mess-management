@@ -5,7 +5,7 @@ export const getPredictionHistory = async () => {
 };
 
 export const trainModel = async () => {
-  return await api.post("/ai/train");
+  return await api.post("/ai/train", {}, { timeout: 60000 });
 };
 
 export const getTomorrowPrediction = async () => {

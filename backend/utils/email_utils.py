@@ -147,3 +147,56 @@ def send_leave_request_email(owner_email, owner_name, member_name, member_room,
         # Never crash the app if email fails — just log it
         print(f"[EMAIL ERROR] Failed to send leave request email: {e}")
         return False
+
+
+def send_bill_reminder_email(to_email, member_name, amount, start_date, end_date, pg_name="SmartPG"):
+    """Send bill invoice reminder email to the member."""
+    start_str = start_date.strftime('%d %b %Y')
+    end_str = end_date.strftime('%d %b %Y')
+    
+    try:
+        msg = Message(
+            subject=f"SmartPG - New Bill Generated (Rs. {amount:.2f})",
+            recipients=[to_email],
+            html=f"""
+            <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto;
+                        border: 1px solid #e0e0e0; border-radius: 10px; padding: 30px;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h2 style="color: #1a237e; margin: 0;">SmartPG Mess Portal</h2>
+                    <p style="color: #666; font-size: 14px;">{pg_name}</p>
+                </div>
+                <p>Hello <strong>{member_name}</strong>,</p>
+                <p>Your mess bill for the billing cycle has been generated. Details below:</p>
+                <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <table style="width: 100%; font-size: 14px;">
+                        <tr>
+                            <td style="color: #666; padding: 4px 0;">Billing Period:</td>
+                            <td style="font-weight: bold; text-align: right; color: #333;">{start_str} to {end_str}</td>
+                        </tr>
+                        <tr>
+                            <td style="color: #666; padding: 4px 0;">Amount Due:</td>
+                            <td style="font-weight: bold; text-align: right; color: #b45309; font-size: 16px;">Rs. {amount:.2f}</td>
+                        </tr>
+                    </table>
+                </div>
+                <p>Please log in to the portal to view your statement and make the payment.</p>
+                <div style="text-align: center; margin: 25px 0;">
+                    <a href="http://localhost:5173/bills" 
+                       style="background: #1a237e; color: white; padding: 10px 20px; 
+                              text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+                        View Bill & Pay
+                    </a>
+                </div>
+                <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;">
+                <p style="color: #aaa; font-size: 12px; text-align: center;">
+                    SmartPG Mess Management System &bull; Automated Email
+                </p>
+            </div>
+            """,
+        )
+        mail.send(msg)
+        print(f"[EMAIL] Bill reminder email sent to member: {to_email}")
+        return True
+    except Exception as e:
+        print(f"[EMAIL ERROR] Failed to send bill reminder email to {to_email}: {e}")
+        return False

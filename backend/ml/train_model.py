@@ -7,7 +7,6 @@ import joblib
 import pandas as pd
 
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.multioutput import MultiOutputRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
     mean_absolute_error,
@@ -79,11 +78,9 @@ def train_model(X_train, y_train):
     Train the Random Forest model.
     """
 
-    model = MultiOutputRegressor(
-        RandomForestRegressor(
-            n_estimators=150,
-            random_state=42,
-        )
+    model = RandomForestRegressor(
+        n_estimators=100,
+        random_state=42,
     )
 
     model.fit(

@@ -35,13 +35,20 @@ def _build_payment_payload(payment):
         member_name = payment.bill.member.member_name
         member_id = payment.bill.member.member_id
 
+    api_method_map = {
+        "cash": "Cash",
+        "upi": "UPI",
+        "bank_transfer": "Bank Transfer"
+    }
+    display_method = api_method_map.get(payment.payment_method, payment.payment_method)
+
     return {
         "payment_id": payment.payment_id,
         "bill_id": payment.bill_id,
         "member_id": member_id,
         "member_name": member_name,
         "amount": float(payment.amount),
-        "payment_method": payment.payment_method,
+        "payment_method": display_method,
         "payment_date": payment.payment_date.isoformat(),
         "transaction_id": payment.transaction_id,
         "remarks": payment.remarks,
@@ -98,11 +105,19 @@ def create_payment(data):
     if amount_value > Decimal(str(bill.balance_amount)):
         return error_response("Amount cannot exceed the bill balance", 400)
 
+    db_method_map = {
+        "Cash": "cash",
+        "UPI": "upi",
+        "Bank Transfer": "bank_transfer",
+    }
+    db_payment_method = db_method_map.get(payment_method, payment_method)
+    db_transaction_reference = transaction_reference if transaction_reference else None
+
     new_payment = Payment(
         bill_id=bill.bill_id,
         amount=amount_value,
-        payment_method=payment_method,
-        transaction_id=transaction_reference,
+        payment_method=db_payment_method,
+        transaction_id=db_transaction_reference,
         remarks=remarks,
     )
 
@@ -119,7 +134,7 @@ def create_payment(data):
             "payment_id": new_payment.payment_id,
             "bill_id": new_payment.bill_id,
             "amount": float(new_payment.amount),
-            "payment_method": new_payment.payment_method,
+            "payment_method": payment_method,
             "transaction_id": new_payment.transaction_id,
             "remarks": new_payment.remarks,
             "verification_status": new_payment.verification_status,
@@ -209,7 +224,8 @@ def update_payment(payment_id, data):
         return error_response("Payment not found", 404)
 
     if "transaction_reference" in data:
-        payment.transaction_id = data["transaction_reference"]
+        tx_ref = data["transaction_reference"]
+        payment.transaction_id = tx_ref if tx_ref else None
 
     if "remarks" in data:
         payment.remarks = data["remarks"]
@@ -218,7 +234,13 @@ def update_payment(payment_id, data):
         payment_method = data["payment_method"]
         if payment_method not in VALID_PAYMENT_METHODS:
             return error_response("Payment method must be one of Cash, UPI, Bank Transfer", 400)
-        payment.payment_method = payment_method
+        
+        db_method_map = {
+            "Cash": "cash",
+            "UPI": "upi",
+            "Bank Transfer": "bank_transfer",
+        }
+        payment.payment_method = db_method_map.get(payment_method, payment_method)
 
     if "verification_status" in data:
         status = data["verification_status"]

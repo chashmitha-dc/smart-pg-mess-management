@@ -113,11 +113,11 @@ function MealPrice() {
   }
 
   return (
-    <Box p={4} sx={{ maxWidth: 850, mx: "auto" }}>
-      <Paper elevation={4} sx={{ p: 4, borderRadius: 3 }}>
+    <Box p={{ xs: 2, sm: 3, md: 4 }} sx={{ maxWidth: 850, mx: "auto" }}>
+      <Paper elevation={4} sx={{ p: { xs: 2.5, sm: 4 }, borderRadius: 3 }}>
         <Box display="flex" alignItems="center" mb={3}>
-          <LocalPizzaIcon color="primary" sx={{ fontSize: 40, mr: 2 }} />
-          <Typography variant="h4" fontWeight="bold">
+          <LocalPizzaIcon color="primary" sx={{ fontSize: { xs: 32, sm: 40 }, mr: 2 }} />
+          <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: "1.5rem", sm: "2.125rem" } }}>
             Meal Pricing Settings
           </Typography>
         </Box>
@@ -236,12 +236,13 @@ function MealPrice() {
             </Grid>
 
             <Grid item xs={12}>
-              <Box display="flex" justifyContent="flex-end" gap={2} mt={2}>
+              <Box display="flex" flexDirection={{ xs: "column", sm: "row" }} justifyContent="flex-end" gap={2} mt={2}>
                 {!editMode ? (
                   <Button
                     variant="contained"
                     startIcon={<EditIcon />}
                     onClick={() => setEditMode(true)}
+                    sx={{ width: { xs: "100%", sm: "auto" } }}
                   >
                     Adjust Prices
                   </Button>
@@ -261,6 +262,7 @@ function MealPrice() {
                           });
                         }}
                         disabled={saving}
+                        sx={{ width: { xs: "100%", sm: "auto" } }}
                       >
                         Cancel
                       </Button>
@@ -271,6 +273,7 @@ function MealPrice() {
                       color="success"
                       startIcon={<SaveIcon />}
                       disabled={saving}
+                      sx={{ width: { xs: "100%", sm: "auto" } }}
                     >
                       {saving ? "Saving..." : "Save Prices"}
                     </Button>

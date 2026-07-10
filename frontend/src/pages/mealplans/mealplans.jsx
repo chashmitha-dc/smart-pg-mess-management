@@ -163,16 +163,23 @@ function MealPlans() {
   }
 
   return (
-    <Box p={4}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Typography variant="h4" fontWeight="bold">
+    <Box p={{ xs: 2, sm: 3, md: 4 }}>
+      <Box
+        display="flex"
+        flexDirection={{ xs: "column", sm: "row" }}
+        gap={2}
+        justifyContent="space-between"
+        alignItems={{ xs: "flex-start", sm: "center" }}
+        mb={4}
+      >
+        <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: "1.75rem", sm: "2.125rem" } }}>
           Meal Plans
         </Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           onClick={handleOpenAdd}
-          sx={{ borderRadius: 2 }}
+          sx={{ borderRadius: 2, width: { xs: "100%", sm: "auto" } }}
         >
           Add Meal Plan
         </Button>

@@ -161,18 +161,18 @@ function Settings() {
   };
 
   return (
-    <Box p={4} sx={{ maxWidth: 850, mx: "auto" }}>
-      <Paper elevation={4} sx={{ p: 4, borderRadius: 3 }}>
+    <Box p={{ xs: 2, sm: 3, md: 4 }} sx={{ maxWidth: 850, mx: "auto" }}>
+      <Paper elevation={4} sx={{ p: { xs: 2.5, sm: 4 }, borderRadius: 3 }}>
         <Box display="flex" alignItems="center" mb={3}>
-          <SettingsIcon color="primary" sx={{ fontSize: 40, mr: 2 }} />
-          <Typography variant="h4" fontWeight="bold">
+          <SettingsIcon color="primary" sx={{ fontSize: { xs: 32, sm: 40 }, mr: 2 }} />
+          <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: "1.5rem", sm: "2.125rem" } }}>
             System Settings
           </Typography>
         </Box>
         <Divider sx={{ mb: 3 }} />
 
         <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 3 }}>
-          <Tabs value={tabValue} onChange={handleTabChange}>
+          <Tabs value={tabValue} onChange={handleTabChange} variant="scrollable" scrollButtons="auto">
             <Tab label="Owner Profile" />
             <Tab label="Database Backup & Restore" />
           </Tabs>
@@ -234,6 +234,7 @@ function Settings() {
                     color="primary"
                     startIcon={<SaveIcon />}
                     disabled={saving}
+                    sx={{ width: { xs: "100%", sm: "auto" } }}
                   >
                     {saving ? "Saving Changes..." : "Save Details"}
                   </Button>

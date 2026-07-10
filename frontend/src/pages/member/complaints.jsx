@@ -121,8 +121,8 @@ function MemberComplaints() {
   }
 
   return (
-    <Box p={2}>
-      <Typography variant="h4" fontWeight="bold" mb={4}>
+    <Box p={{ xs: 2, sm: 3, md: 4 }}>
+      <Typography variant="h4" fontWeight="bold" mb={4} sx={{ fontSize: { xs: "1.75rem", sm: "2.125rem" } }}>
         My Complaints & Issues
       </Typography>
 
@@ -193,7 +193,7 @@ function MemberComplaints() {
             <Typography variant="h6" fontWeight="bold" p={3} bgcolor="#fafafa">
               My Complaints History
             </Typography>
-            <TableContainer>
+            <TableContainer sx={{ overflowX: "auto" }}>
               <Table>
                 <TableHead>
                   <TableRow>

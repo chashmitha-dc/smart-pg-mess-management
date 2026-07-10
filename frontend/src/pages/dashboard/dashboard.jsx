@@ -189,13 +189,13 @@ function Dashboard() {
 
         <Grid container alignItems="center" spacing={2} sx={{ p: { xs: 3, md: 4 } }}>
           <Grid item xs={12} md={7} sx={{ zIndex: 2 }}>
-            <Typography variant="h4" fontWeight="800" sx={{ mb: 1, letterSpacing: "-0.5px" }}>
+            <Typography variant="h4" fontWeight="800" sx={{ mb: 1, letterSpacing: "-0.5px", fontSize: { xs: "1.75rem", sm: "2.125rem" } }}>
               Welcome Back, {owner?.name || "Manager"}!
             </Typography>
-            <Typography variant="body1" sx={{ opacity: 0.9, mb: 3, maxWidth: 500, lineHeight: 1.6 }}>
+            <Typography variant="body1" sx={{ opacity: 0.9, mb: 3, maxWidth: 500, lineHeight: 1.6, fontSize: { xs: "0.9rem", sm: "1rem" } }}>
               Keep your PG operations running seamlessly. Review occupancy status, financial records, pending complaints, and dining forecasts in real-time.
             </Typography>
-            <Box display="flex" gap={2}>
+            <Box display="flex" flexDirection={{ xs: "column", sm: "row" }} gap={2}>
               <Button
                 variant="contained"
                 onClick={() => navigate("/members")}
@@ -206,6 +206,7 @@ function Dashboard() {
                   borderRadius: 2,
                   px: 3,
                   py: 1,
+                  width: { xs: "100%", sm: "auto" },
                   "&:hover": {
                     bgcolor: "#f8fafc",
                   },
@@ -223,6 +224,7 @@ function Dashboard() {
                   borderRadius: 2,
                   px: 3,
                   py: 1,
+                  width: { xs: "100%", sm: "auto" },
                   "&:hover": {
                     borderColor: "white",
                     background: "rgba(255, 255, 255, 0.05)",
@@ -241,7 +243,7 @@ function Dashboard() {
       <Paper
         elevation={0}
         sx={{
-          p: 3.5,
+          p: { xs: 2, sm: 3.5 },
           borderRadius: 4,
           border: "1px solid",
           borderColor: dashboard?.due_billing_members?.length > 0 ? "#f59e0b" : "divider",
@@ -250,7 +252,7 @@ function Dashboard() {
       >
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={2} flexWrap="wrap" gap={2}>
           <Box display="flex" alignItems="center" gap={1.5}>
-            <Typography variant="h5" sx={{ display: "flex", alignItems: "center", gap: 1, fontWeight: "bold", color: dashboard?.due_billing_members?.length > 0 ? "#b45309" : "text.primary" }}>
+            <Typography variant="h5" sx={{ display: "flex", alignItems: "center", gap: 1, fontWeight: "bold", fontSize: { xs: "1.25rem", sm: "1.5rem" }, color: dashboard?.due_billing_members?.length > 0 ? "#b45309" : "text.primary" }}>
               <span>🔔</span> Members Pending Billing
             </Typography>
           </Box>
@@ -259,7 +261,7 @@ function Dashboard() {
             color="warning"
             onClick={handleGenerateAll}
             disabled={generatingBill || !dashboard?.due_billing_members || dashboard.due_billing_members.length === 0}
-            sx={{ borderRadius: 2, fontWeight: "bold" }}
+            sx={{ borderRadius: 2, fontWeight: "bold", width: { xs: "100%", sm: "auto" } }}
           >
             {generatingBill ? "Generating..." : "Generate All Due Bills"}
           </Button>

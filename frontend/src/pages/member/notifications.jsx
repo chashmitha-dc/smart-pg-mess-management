@@ -60,11 +60,18 @@ function MemberNotifications() {
   }
 
   return (
-    <Box p={2} sx={{ maxWidth: 800, mx: "auto" }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+    <Box p={{ xs: 2, sm: 3, md: 4 }} sx={{ maxWidth: 800, mx: "auto" }}>
+      <Box
+        display="flex"
+        flexDirection={{ xs: "column", sm: "row" }}
+        gap={2}
+        justifyContent="space-between"
+        alignItems={{ xs: "flex-start", sm: "center" }}
+        mb={4}
+      >
         <Box display="flex" alignItems="center">
-          <NotificationsIcon color="primary" sx={{ fontSize: 40, mr: 2 }} />
-          <Typography variant="h4" fontWeight="bold">
+          <NotificationsIcon color="primary" sx={{ fontSize: { xs: 32, sm: 40 }, mr: 2 }} />
+          <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: "1.75rem", sm: "2.125rem" } }}>
             Announcements
           </Typography>
         </Box>
@@ -93,6 +100,9 @@ function MemberNotifications() {
                     py: 2.5,
                     bgcolor: notif.is_read ? "transparent" : "#f0f9ff",
                     borderRadius: 1,
+                    flexDirection: { xs: "column", sm: "row" },
+                    alignItems: { xs: "stretch", sm: "center" },
+                    gap: 2,
                   }}
                 >
                   <ListItemText
@@ -123,7 +133,7 @@ function MemberNotifications() {
                       variant="outlined"
                       startIcon={<CheckIcon />}
                       onClick={() => handleMarkAsRead(notif.notification_id)}
-                      sx={{ ml: 2 }}
+                      sx={{ ml: { xs: 0, sm: 2 }, alignSelf: { xs: "flex-end", sm: "auto" } }}
                     >
                       Mark read
                     </Button>

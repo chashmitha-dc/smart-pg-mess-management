@@ -104,11 +104,11 @@ function PG() {
   }
 
   return (
-    <Box p={4} sx={{ maxWidth: 800, mx: "auto" }}>
-      <Paper elevation={4} sx={{ p: 4, borderRadius: 3 }}>
+    <Box p={{ xs: 2, sm: 3, md: 4 }} sx={{ maxWidth: 800, mx: "auto" }}>
+      <Paper elevation={4} sx={{ p: { xs: 2.5, sm: 4 }, borderRadius: 3 }}>
         <Box display="flex" alignItems="center" mb={3}>
-          <ApartmentIcon color="primary" sx={{ fontSize: 40, mr: 2 }} />
-          <Typography variant="h4" fontWeight="bold">
+          <ApartmentIcon color="primary" sx={{ fontSize: { xs: 32, sm: 40 }, mr: 2 }} />
+          <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: "1.5rem", sm: "2.125rem" } }}>
             Mess / PG Profile Settings
           </Typography>
         </Box>
@@ -173,12 +173,13 @@ function PG() {
             </Grid>
 
             <Grid item xs={12}>
-              <Box display="flex" justifyContent="flex-end" gap={2} mt={2}>
+              <Box display="flex" flexDirection={{ xs: "column", sm: "row" }} justifyContent="flex-end" gap={2} mt={2}>
                 {!editMode ? (
                   <Button
                     variant="contained"
                     startIcon={<EditIcon />}
                     onClick={() => setEditMode(true)}
+                    sx={{ width: { xs: "100%", sm: "auto" } }}
                   >
                     Edit Settings
                   </Button>
@@ -198,6 +199,7 @@ function PG() {
                           });
                         }}
                         disabled={saving}
+                        sx={{ width: { xs: "100%", sm: "auto" } }}
                       >
                         Cancel
                       </Button>
@@ -208,6 +210,7 @@ function PG() {
                       color="success"
                       startIcon={<SaveIcon />}
                       disabled={saving}
+                      sx={{ width: { xs: "100%", sm: "auto" } }}
                     >
                       {saving ? "Saving..." : "Save Settings"}
                     </Button>

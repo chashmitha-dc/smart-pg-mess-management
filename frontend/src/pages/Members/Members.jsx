@@ -298,14 +298,16 @@ function Members() {
   }
 
   return (
-    <Box p={4}>
+    <Box p={{ xs: 2, sm: 3, md: 4 }}>
       <Box
         display="flex"
+        flexDirection={{ xs: "column", sm: "row" }}
+        gap={2}
         justifyContent="space-between"
-        alignItems="center"
+        alignItems={{ xs: "flex-start", sm: "center" }}
         mb={4}
       >
-        <Typography variant="h4" fontWeight="bold">
+        <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: "1.75rem", sm: "2.125rem" } }}>
           Members Management
         </Typography>
 
@@ -313,7 +315,7 @@ function Members() {
           variant="contained"
           startIcon={<AddIcon />}
           onClick={handleOpenAdd}
-          sx={{ borderRadius: 2 }}
+          sx={{ borderRadius: 2, width: { xs: "100%", sm: "auto" } }}
         >
           Add Member
         </Button>

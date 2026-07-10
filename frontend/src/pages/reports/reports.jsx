@@ -156,15 +156,27 @@ function Reports() {
   }
 
   return (
-    <Box p={4}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+    <Box p={{ xs: 2, sm: 3, md: 4 }}>
+      <Box
+        display="flex"
+        flexDirection={{ xs: "column", sm: "row" }}
+        gap={2}
+        justifyContent="space-between"
+        alignItems={{ xs: "flex-start", sm: "center" }}
+        mb={4}
+      >
         <Box display="flex" alignItems="center">
-          <AssessmentIcon color="primary" sx={{ fontSize: 40, mr: 2 }} />
-          <Typography variant="h4" fontWeight="bold">
+          <AssessmentIcon color="primary" sx={{ fontSize: { xs: 32, sm: 40 }, mr: 2 }} />
+          <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: "1.75rem", sm: "2.125rem" } }}>
             Analytics & Reports
           </Typography>
         </Box>
-        <Button variant="contained" startIcon={<DownloadIcon />} onClick={handleExportCSV}>
+        <Button
+          variant="contained"
+          startIcon={<DownloadIcon />}
+          onClick={handleExportCSV}
+          sx={{ width: { xs: "100%", sm: "auto" } }}
+        >
           Export Selected CSV
         </Button>
       </Box>
@@ -305,7 +317,7 @@ function Reports() {
         <Typography variant="h6" fontWeight="bold" p={3} bgcolor="#fafafa">
           Detailed Report Log
         </Typography>
-        <TableContainer>
+        <TableContainer sx={{ overflowX: "auto" }}>
           <Table>
             <TableHead>
               {reportType === "revenue" && (

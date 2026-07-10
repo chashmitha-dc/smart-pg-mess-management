@@ -78,7 +78,7 @@ function MemberDashboard() {
   const activeNotifications = notifications.slice(0, 3);
 
   return (
-    <Box sx={{ p: 1, display: "flex", flexDirection: "column", gap: 3 }}>
+    <Box sx={{ p: { xs: 2, sm: 3, md: 4 }, display: "flex", flexDirection: "column", gap: 3 }}>
       {/* Premium Hero Welcome Card for Member */}
       <Card
         elevation={0}
@@ -121,13 +121,13 @@ function MemberDashboard() {
 
         <Grid container alignItems="center" spacing={2} sx={{ p: { xs: 3, md: 4 } }}>
           <Grid item xs={12} md={7} sx={{ zIndex: 2 }}>
-            <Typography variant="h4" fontWeight="800" sx={{ mb: 1, letterSpacing: "-0.5px" }}>
+            <Typography variant="h4" fontWeight="800" sx={{ mb: 1, letterSpacing: "-0.5px", fontSize: { xs: "1.75rem", sm: "2.125rem" } }}>
               Welcome, {member?.member_name || "Resident"}!
             </Typography>
-            <Typography variant="body1" sx={{ opacity: 0.9, mb: 3, maxWidth: 500, lineHeight: 1.6 }}>
+            <Typography variant="body1" sx={{ opacity: 0.9, mb: 3, maxWidth: 500, lineHeight: 1.6, fontSize: { xs: "0.9rem", sm: "1rem" } }}>
               Welcome to your personal resident dashboard. Check your leaves status, clear billing dues, and read the latest announcements from your PG owner here.
             </Typography>
-            <Box display="flex" gap={2}>
+            <Box display="flex" flexDirection={{ xs: "column", sm: "row" }} gap={2}>
               <Button
                 variant="contained"
                 onClick={() => navigate("/member/leaves")}
@@ -138,6 +138,7 @@ function MemberDashboard() {
                   borderRadius: 2,
                   px: 3,
                   py: 1,
+                  width: { xs: "100%", sm: "auto" },
                   "&:hover": {
                     bgcolor: "#fdf2f8",
                   },
@@ -155,6 +156,7 @@ function MemberDashboard() {
                   borderRadius: 2,
                   px: 3,
                   py: 1,
+                  width: { xs: "100%", sm: "auto" },
                   "&:hover": {
                     borderColor: "white",
                     background: "rgba(255, 255, 255, 0.05)",

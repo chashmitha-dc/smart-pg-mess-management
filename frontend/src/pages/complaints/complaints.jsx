@@ -130,8 +130,8 @@ function Complaints() {
   }
 
   return (
-    <Box p={4}>
-      <Typography variant="h4" fontWeight="bold" mb={4}>
+    <Box p={{ xs: 2, sm: 3, md: 4 }}>
+      <Typography variant="h4" fontWeight="bold" mb={4} sx={{ fontSize: { xs: "1.75rem", sm: "2.125rem" } }}>
         Complaints & Grievances
       </Typography>
 
@@ -204,7 +204,7 @@ function Complaints() {
 
       {/* Complaints Grid table */}
       <Paper elevation={3} sx={{ borderRadius: 2, overflow: "hidden" }}>
-        <TableContainer>
+        <TableContainer sx={{ overflowX: "auto" }}>
           <Table>
             <TableHead>
               <TableRow>

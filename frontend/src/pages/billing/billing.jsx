@@ -230,17 +230,30 @@ function Billing() {
   }
 
   return (
-    <Box p={4}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Typography variant="h4" fontWeight="bold">
+    <Box p={{ xs: 2, sm: 3, md: 4 }}>
+      <Box
+        display="flex"
+        flexDirection={{ xs: "column", md: "row" }}
+        gap={2}
+        justifyContent="space-between"
+        alignItems={{ xs: "flex-start", md: "center" }}
+        mb={4}
+      >
+        <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: "1.75rem", sm: "2.125rem" } }}>
           Billing & Invoicing
         </Typography>
 
-        <Box display="flex" gap={2}>
+        <Box
+          display="flex"
+          flexDirection={{ xs: "column", sm: "row" }}
+          gap={2}
+          width={{ xs: "100%", md: "auto" }}
+        >
           <Button
             variant="outlined"
             startIcon={<DownloadIcon />}
             onClick={handleExportCSV}
+            sx={{ width: { xs: "100%", sm: "auto" } }}
           >
             Export CSV
           </Button>
@@ -249,6 +262,7 @@ function Billing() {
             color="secondary"
             onClick={() => setOpenSingleBillDialog(true)}
             disabled={generating}
+            sx={{ width: { xs: "100%", sm: "auto" } }}
           >
             Generate Single Bill
           </Button>
@@ -257,6 +271,7 @@ function Billing() {
             color="primary"
             onClick={handleGenerateAll}
             disabled={generating}
+            sx={{ width: { xs: "100%", sm: "auto" } }}
           >
             {generating ? "Generating..." : "Generate All Bills"}
           </Button>
@@ -308,7 +323,7 @@ function Billing() {
 
       {/* Invoice list table */}
       <Paper elevation={3} sx={{ borderRadius: 2, overflow: "hidden" }}>
-        <TableContainer>
+        <TableContainer sx={{ overflowX: "auto" }}>
           <Table>
             <TableHead>
               <TableRow>

@@ -113,20 +113,28 @@ function AI() {
   }
 
   return (
-    <Box p={4}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+    <Box p={{ xs: 2, sm: 3, md: 4 }}>
+      <Box
+        display="flex"
+        flexDirection={{ xs: "column", md: "row" }}
+        gap={2}
+        justifyContent="space-between"
+        alignItems={{ xs: "flex-start", md: "center" }}
+        mb={4}
+      >
         <Box display="flex" alignItems="center">
-          <SmartToyIcon color="primary" sx={{ fontSize: 40, mr: 2 }} />
-          <Typography variant="h4" fontWeight="bold">
+          <SmartToyIcon color="primary" sx={{ fontSize: { xs: 32, sm: 40 }, mr: 2 }} />
+          <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: "1.5rem", sm: "2.125rem" } }}>
             AI Food Prediction Center
           </Typography>
         </Box>
-        <Box display="flex" gap={2}>
+        <Box display="flex" flexDirection={{ xs: "column", sm: "row" }} gap={2} width={{ xs: "100%", md: "auto" }}>
           <Button
             variant="outlined"
             startIcon={<ModelTrainingIcon />}
             onClick={handleTrain}
             disabled={training}
+            sx={{ width: { xs: "100%", sm: "auto" } }}
           >
             {training ? "Training..." : "Train Model"}
           </Button>
@@ -135,6 +143,7 @@ function AI() {
             startIcon={<PlayArrowIcon />}
             onClick={handlePredict}
             disabled={predicting}
+            sx={{ width: { xs: "100%", sm: "auto" } }}
           >
             {predicting ? "Predicting..." : "Predict Tomorrow"}
           </Button>
@@ -265,7 +274,7 @@ function AI() {
         <Typography variant="h6" fontWeight="bold" sx={{ p: 3, bgcolor: "#fafafa" }}>
           AI Predictions Logs
         </Typography>
-        <TableContainer>
+        <TableContainer sx={{ overflowX: "auto" }}>
           <Table>
             <TableHead>
               <TableRow>

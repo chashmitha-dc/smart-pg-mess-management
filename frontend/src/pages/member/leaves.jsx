@@ -124,8 +124,8 @@ function MemberLeaves() {
   }
 
   return (
-    <Box p={1} sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-      <Typography variant="h4" fontWeight="bold">
+    <Box p={{ xs: 2, sm: 3, md: 4 }} sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+      <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: "1.75rem", sm: "2.125rem" } }}>
         Leave Absence Requests
       </Typography>
 
@@ -203,7 +203,7 @@ function MemberLeaves() {
               My Leave Request History
             </Typography>
             <Divider />
-            <TableContainer>
+            <TableContainer sx={{ overflowX: "auto" }}>
               <Table>
                 <TableHead>
                   <TableRow>

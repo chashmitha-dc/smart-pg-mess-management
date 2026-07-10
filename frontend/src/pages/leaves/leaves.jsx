@@ -112,9 +112,16 @@ function Leaves() {
   }
 
   return (
-    <Box p={4}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Typography variant="h4" fontWeight="bold">
+    <Box p={{ xs: 2, sm: 3, md: 4 }}>
+      <Box
+        display="flex"
+        flexDirection={{ xs: "column", sm: "row" }}
+        gap={2}
+        justifyContent="space-between"
+        alignItems={{ xs: "flex-start", sm: "center" }}
+        mb={4}
+      >
+        <Typography variant="h4" fontWeight="bold" sx={{ fontSize: { xs: "1.75rem", sm: "2.125rem" } }}>
           Leave Management
         </Typography>
         <Button
@@ -122,6 +129,7 @@ function Leaves() {
           startIcon={<RefreshIcon />}
           onClick={loadLeaves}
           disabled={actioning}
+          sx={{ width: { xs: "100%", sm: "auto" } }}
         >
           Refresh
         </Button>
@@ -165,7 +173,7 @@ function Leaves() {
 
       {/* Table grid */}
       <Paper elevation={3} sx={{ borderRadius: 2, overflow: "hidden" }}>
-        <TableContainer>
+        <TableContainer sx={{ overflowX: "auto" }}>
           <Table>
             <TableHead>
               <TableRow>

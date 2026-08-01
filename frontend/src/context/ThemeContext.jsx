@@ -1,10 +1,20 @@
-import { createContext, useState, useMemo, useContext } from "react";
+import { createContext, useState, useMemo, useContext, useEffect } from "react";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 
 export const ColorModeContext = createContext({ toggleColorMode: () => {}, mode: "light" });
 
 export function ColorModeProvider({ children }) {
   const [mode, setMode] = useState(localStorage.getItem("theme_mode") || "light");
+
+  useEffect(() => {
+    document.body.style.backgroundColor = mode === "light" ? "#f8fafc" : "#0f172a";
+    document.body.style.color = mode === "light" ? "#0f172a" : "#f8fafc";
+    if (mode === "dark") {
+      document.body.classList.add("dark");
+    } else {
+      document.body.classList.remove("dark");
+    }
+  }, [mode]);
 
   const colorMode = useMemo(
     () => ({
@@ -26,12 +36,12 @@ export function ColorModeProvider({ children }) {
         palette: {
           mode,
           primary: {
-            main: mode === "light" ? "#1e40af" : "#60a5fa", // Rich royal blue
+            main: mode === "light" ? "#1e40af" : "#60a5fa",
             light: "#3b82f6",
             dark: "#1e3a8a",
           },
           secondary: {
-            main: mode === "light" ? "#0f766e" : "#2dd4bf", // Deep teal
+            main: mode === "light" ? "#0f766e" : "#2dd4bf",
           },
           success: {
             main: mode === "light" ? "#10b981" : "#34d399",
@@ -43,16 +53,17 @@ export function ColorModeProvider({ children }) {
             main: mode === "light" ? "#ef4444" : "#f87171",
           },
           background: {
-            default: mode === "light" ? "#f8fafc" : "#0f172a", // Sleek modern slate backgrounds
+            default: mode === "light" ? "#f8fafc" : "#0f172a",
             paper: mode === "light" ? "#ffffff" : "#1e293b",
           },
           text: {
             primary: mode === "light" ? "#0f172a" : "#f8fafc",
             secondary: mode === "light" ? "#475569" : "#94a3b8",
           },
+          divider: mode === "light" ? "#e2e8f0" : "#334155",
         },
         typography: {
-          fontFamily: "'Outfit', 'Inter', 'Poppins', sans-serif", // Clean premium look
+          fontFamily: "'Outfit', 'Inter', 'Poppins', sans-serif",
           h4: {
             fontWeight: 800,
             letterSpacing: "-0.75px",
@@ -86,7 +97,7 @@ export function ColorModeProvider({ children }) {
           },
         },
         shape: {
-          borderRadius: 16, // Beautiful smooth rounded corners
+          borderRadius: 8,
         },
         shadows: [
           "none",
@@ -95,30 +106,34 @@ export function ColorModeProvider({ children }) {
           "0px 4px 12px rgba(0, 0, 0, 0.07)",
           "0px 8px 24px rgba(0, 0, 0, 0.08)",
           "0px 12px 32px rgba(0, 0, 0, 0.09)",
-          ...Array(19).fill("none"), // fill remaining shadows to satisfy MUI's length requirement
+          ...Array(19).fill("none"),
         ],
         components: {
+          MuiCssBaseline: {
+            styleOverrides: {
+              body: {
+                backgroundColor: mode === "light" ? "#f8fafc" : "#0f172a",
+                color: mode === "light" ? "#0f172a" : "#f8fafc",
+              },
+            },
+          },
           MuiButton: {
             styleOverrides: {
               root: {
-                borderRadius: 12,
+                borderRadius: 6,
                 padding: "8px 20px",
                 transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                 boxShadow: "none",
                 "&:hover": {
                   boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-                  transform: "translateY(-1px)",
-                },
-                "&:active": {
-                  transform: "translateY(0px)",
                 },
               },
               containedPrimary: {
-                background: mode === "light" ? "linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)" : undefined,
+                background: mode === "light" ? "linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)" : "linear-gradient(135deg, #2563eb 0%, #60a5fa 100%)",
                 color: "#ffffff",
               },
               containedSecondary: {
-                background: mode === "light" ? "linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)" : undefined,
+                background: mode === "light" ? "linear-gradient(135deg, #0f766e 0%, #14b8a6 100%)" : "linear-gradient(135deg, #0d9488 0%, #2dd4bf 100%)",
                 color: "#ffffff",
               },
             },
@@ -126,17 +141,43 @@ export function ColorModeProvider({ children }) {
           MuiCard: {
             styleOverrides: {
               root: {
-                borderRadius: 16,
-                border: mode === "light" ? "1px solid #f1f5f9" : "1px solid #334155",
-                boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.03)",
+                borderRadius: 8,
+                backgroundColor: mode === "light" ? "#ffffff" : "#1e293b",
+                color: mode === "light" ? "#0f172a" : "#f8fafc",
+                borderColor: mode === "light" ? "#e2e8f0" : "#334155",
+                boxShadow: mode === "light" ? "0px 4px 16px rgba(0, 0, 0, 0.04)" : "0px 4px 16px rgba(0, 0, 0, 0.25)",
               },
             },
           },
           MuiPaper: {
             styleOverrides: {
               root: {
-                borderRadius: 16,
-                boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.03)",
+                borderRadius: 8,
+                backgroundColor: mode === "light" ? "#ffffff" : "#1e293b",
+                color: mode === "light" ? "#0f172a" : "#f8fafc",
+                borderColor: mode === "light" ? "#e2e8f0" : "#334155",
+                backgroundImage: "none",
+                boxShadow: mode === "light" ? "0px 4px 16px rgba(0, 0, 0, 0.04)" : "0px 4px 16px rgba(0, 0, 0, 0.25)",
+              },
+            },
+          },
+          MuiAppBar: {
+            styleOverrides: {
+              root: {
+                backgroundColor: mode === "light" ? "#ffffff" : "#1e293b",
+                color: mode === "light" ? "#0f172a" : "#f8fafc",
+                borderColor: mode === "light" ? "#e2e8f0" : "#334155",
+                backgroundImage: "none",
+              },
+            },
+          },
+          MuiDrawer: {
+            styleOverrides: {
+              paper: {
+                backgroundColor: mode === "light" ? "#ffffff" : "#1e293b",
+                color: mode === "light" ? "#0f172a" : "#f8fafc",
+                borderColor: mode === "light" ? "#e2e8f0" : "#334155",
+                backgroundImage: "none",
               },
             },
           },
@@ -145,7 +186,7 @@ export function ColorModeProvider({ children }) {
               root: {
                 "& .MuiTableCell-head": {
                   fontWeight: 700,
-                  backgroundColor: mode === "light" ? "#f8fafc" : "#1e293b",
+                  backgroundColor: mode === "light" ? "#f8fafc" : "#0f172a",
                   color: mode === "light" ? "#475569" : "#94a3b8",
                   borderBottom: "2px solid",
                   borderColor: mode === "light" ? "#e2e8f0" : "#334155",
@@ -158,6 +199,7 @@ export function ColorModeProvider({ children }) {
               root: {
                 padding: "16px",
                 borderColor: mode === "light" ? "#f1f5f9" : "#334155",
+                color: mode === "light" ? "#0f172a" : "#f8fafc",
               },
             },
           },
@@ -169,9 +211,9 @@ export function ColorModeProvider({ children }) {
             styleOverrides: {
               root: {
                 "& .MuiOutlinedInput-root": {
-                  borderRadius: 12,
-                  transition: "all 0.2s ease",
+                  borderRadius: 6,
                   backgroundColor: mode === "light" ? "#ffffff" : "#1e293b",
+                  color: mode === "light" ? "#0f172a" : "#f8fafc",
                   "& fieldset": {
                     borderColor: mode === "light" ? "#e2e8f0" : "#334155",
                   },

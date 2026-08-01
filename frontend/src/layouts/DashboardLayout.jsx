@@ -38,7 +38,7 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { useColorMode } from "../context/ThemeContext";
 
-const drawerWidth = 260;
+const drawerWidth = 280;
 
 const menuItems = [
   {
@@ -119,41 +119,53 @@ function DashboardLayout() {
   };
 
   const drawerContent = (
-    <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      {/* Drawer Header with Title for Mobile, or padding spacer */}
+    <Box sx={{ display: "flex", flexDirection: "column", height: "100%", bgcolor: "background.paper" }}>
+      {/* Spacer matching AppBar height so mobile drawer content starts below AppBar */}
+      <Toolbar sx={{ display: { md: "none" }, minHeight: { xs: "60px !important", md: "64px !important" } }} />
+
+      {/* Compact Profile Header Section */}
       <Box
         sx={{
-          p: 3,
-          textAlign: "center",
+          p: 2.5,
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+          bgcolor: (theme) => theme.palette.mode === "dark" ? "rgba(255,255,255,0.03)" : "rgba(29, 78, 216, 0.04)",
         }}
       >
         <Avatar
           sx={{
-            width: 70,
-            height: 70,
-            mx: "auto",
-            mb: 2,
+            width: 44,
+            height: 44,
+            bgcolor: "primary.main",
+            fontWeight: "bold",
+            fontSize: "1.1rem",
+            boxShadow: "0 4px 12px rgba(29, 78, 216, 0.2)",
           }}
         >
           {owner?.name?.charAt(0) || "A"}
         </Avatar>
 
-        <Typography fontWeight="bold">
-          {owner?.name || "Owner"}
-        </Typography>
-
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{ wordBreak: "break-all" }}
-        >
-          {owner?.email}
-        </Typography>
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <Typography fontWeight="700" variant="subtitle2" noWrap sx={{ fontSize: "0.95rem" }}>
+            {owner?.name || "Owner"}
+          </Typography>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            noWrap
+            display="block"
+            sx={{ fontSize: "0.75rem" }}
+          >
+            {owner?.email}
+          </Typography>
+        </Box>
       </Box>
 
       <Divider />
 
-      <List sx={{ flexGrow: 1, overflowY: "auto" }}>
+      {/* Scrollable Navigation Items */}
+      <List sx={{ flexGrow: 1, overflowY: "auto", px: 1.5, py: 1.5 }}>
         {menuItems.map((item) => (
           <ListItemButton
             key={item.text}
@@ -161,37 +173,46 @@ function DashboardLayout() {
             to={item.path}
             onClick={() => setMobileOpen(false)}
             sx={(theme) => ({
-              mx: 1,
-              borderRadius: 2,
-              mb: 0.5,
-              transition: "all 0.2s ease",
+              borderRadius: "6px",
+              my: 0.5,
+              py: 1,
+              px: 1.5,
+              transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+              "& .MuiListItemIcon-root": {
+                minWidth: 36,
+                color: theme.palette.text.secondary,
+                fontSize: 22,
+              },
+              "& .MuiListItemText-primary": {
+                fontSize: "0.9rem",
+                fontWeight: 500,
+              },
               "&.active": {
-                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light || theme.palette.primary.main} 100%)`,
+                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark || theme.palette.primary.main} 100%)`,
                 color: "white",
-                boxShadow: "0 4px 12px rgba(30, 64, 175, 0.15)",
+                boxShadow: "0 4px 14px rgba(29, 78, 216, 0.25)",
                 "& .MuiListItemIcon-root": {
                   color: "white",
                 },
+                "& .MuiListItemText-primary": {
+                  fontWeight: 700,
+                },
               },
               "&:hover": {
-                borderRadius: 2,
-              }
+                borderRadius: "6px",
+              },
             })}
           >
-            <ListItemIcon>
-              {item.icon}
-            </ListItemIcon>
-
-            <ListItemText
-              primary={item.text}
-            />
+            <ListItemIcon>{item.icon}</ListItemIcon>
+            <ListItemText primary={item.text} />
           </ListItemButton>
         ))}
       </List>
 
       <Divider />
 
-      <Box p={2}>
+      {/* Fixed Bottom Controls Section */}
+      <Box sx={{ p: 2, display: "flex", flexDirection: "column", gap: 1, mt: "auto" }}>
         <Button
           fullWidth
           color="primary"
@@ -200,8 +221,14 @@ function DashboardLayout() {
             setMobileOpen(false);
             navigate("/settings");
           }}
-          startIcon={<SettingsIcon />}
-          sx={{ mb: 1.5 }}
+          startIcon={<SettingsIcon sx={{ fontSize: 20 }} />}
+          sx={{
+            height: "44px",
+            borderRadius: "6px",
+            fontWeight: "600",
+            fontSize: "0.85rem",
+            textTransform: "none",
+          }}
         >
           Settings
         </Button>
@@ -209,8 +236,16 @@ function DashboardLayout() {
           fullWidth
           color="error"
           variant="contained"
-          startIcon={<LogoutIcon />}
+          startIcon={<LogoutIcon sx={{ fontSize: 20 }} />}
           onClick={handleLogout}
+          sx={{
+            height: "44px",
+            borderRadius: "6px",
+            fontWeight: "700",
+            fontSize: "0.85rem",
+            textTransform: "none",
+            boxShadow: "0 4px 12px rgba(220, 38, 38, 0.2)",
+          }}
         >
           Logout
         </Button>
@@ -222,55 +257,69 @@ function DashboardLayout() {
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
       <AppBar
         position="fixed"
+        elevation={1}
         sx={{
           zIndex: 1201,
+          height: { xs: 60, md: 64 },
+          justifyContent: "center",
+          borderRadius: 0,
         }}
       >
-        <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+        <Toolbar
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            minHeight: { xs: "60px !important", md: "64px !important" },
+            px: { xs: 1.5, sm: 3 },
+          }}
+        >
           <Box display="flex" alignItems="center">
             <IconButton
               color="inherit"
               aria-label="open drawer"
               edge="start"
               onClick={handleDrawerToggle}
-              sx={{ mr: 2, display: { md: "none" } }}
+              sx={{ mr: 1.5, display: { md: "none" }, p: 0.75 }}
             >
-              <MenuIcon />
+              <MenuIcon sx={{ fontSize: 24 }} />
             </IconButton>
             <Typography
               variant="h6"
-              fontWeight="bold"
-              sx={{ fontSize: { xs: "1.1rem", sm: "1.25rem" } }}
+              fontWeight="800"
+              sx={{ fontSize: { xs: "1.05rem", sm: "1.25rem" }, letterSpacing: "-0.3px" }}
             >
               SmartPG & Mess
             </Typography>
           </Box>
           <Box display="flex" alignItems="center" gap={0.5}>
-            <IconButton color="inherit" onClick={toggleColorMode}>
-              {mode === "light" ? <DarkModeIcon /> : <LightModeIcon />}
+            <IconButton color="inherit" onClick={toggleColorMode} size="small" sx={{ p: 0.75 }}>
+              {mode === "light" ? <DarkModeIcon sx={{ fontSize: 22 }} /> : <LightModeIcon sx={{ fontSize: 22 }} />}
             </IconButton>
             <Tooltip title="Logout">
-              <IconButton color="inherit" onClick={handleLogout}>
-                <LogoutIcon />
+              <IconButton color="inherit" onClick={handleLogout} size="small" sx={{ p: 0.75 }}>
+                <LogoutIcon sx={{ fontSize: 22 }} />
               </IconButton>
             </Tooltip>
           </Box>
         </Toolbar>
       </AppBar>
 
-      {/* Temporary Mobile Drawer */}
+      {/* Temporary Mobile Drawer (280px rectangular card) */}
       <Drawer
         variant="temporary"
         open={mobileOpen}
         onClose={handleDrawerToggle}
         ModalProps={{
           keepMounted: true,
+          disableScrollLock: false,
         }}
         sx={{
           display: { xs: "block", md: "none" },
           "& .MuiDrawer-paper": {
             width: drawerWidth,
             boxSizing: "border-box",
+            borderRadius: 0,
+            boxShadow: "0 20px 40px rgba(0,0,0,0.3)",
           },
         }}
       >

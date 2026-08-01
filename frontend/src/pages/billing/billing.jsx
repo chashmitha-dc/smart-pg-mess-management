@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import {
   Box,
   Button,
+  Card,
+  CardContent,
   Chip,
   CircularProgress,
   Divider,
@@ -22,6 +24,7 @@ import {
   DialogContent,
   DialogActions,
   InputAdornment,
+  useMediaQuery,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import ReceiptIcon from "@mui/icons-material/Receipt";
@@ -34,6 +37,7 @@ import { getBills, generateAllBills, generateMemberBill } from "../../api/billin
 import { getMembers } from "../../api/memberApi";
 
 function Billing() {
+  const isMobile = useMediaQuery("(max-width:767.95px)");
   const [bills, setBills] = useState([]);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -321,54 +325,27 @@ function Billing() {
         </Grid>
       </Paper>
 
-      {/* Invoice list table */}
-      <Paper elevation={3} sx={{ borderRadius: 2, overflow: "hidden" }}>
-        <TableContainer sx={{ overflowX: "auto" }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell><b>ID</b></TableCell>
-                <TableCell><b>Member Name</b></TableCell>
-                <TableCell><b>Billing Cycle</b></TableCell>
-                <TableCell align="right"><b>Original Amt</b></TableCell>
-                <TableCell align="right"><b>Deductions</b></TableCell>
-                <TableCell align="right"><b>Final Amt</b></TableCell>
-                <TableCell align="right"><b>Paid</b></TableCell>
-                <TableCell align="right"><b>Balance</b></TableCell>
-                <TableCell><b>Status</b></TableCell>
-                <TableCell align="center"><b>Actions</b></TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedBills.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={10} align="center" sx={{ py: 3 }}>
-                    No Bills Found.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                paginatedBills.map((bill) => (
-                  <TableRow key={bill.bill_id} hover>
-                    <TableCell>{bill.bill_id}</TableCell>
-                    <TableCell><b>{bill.member_name}</b></TableCell>
-                    <TableCell>
-                      {new Date(bill.billing_period_start).toLocaleDateString()} -{" "}
-                      {new Date(bill.billing_period_end).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell align="right">₹{bill.original_amount}</TableCell>
-                    <TableCell align="right" style={{ color: "#d32f2f" }}>
-                      -₹{bill.absence_deduction}
-                    </TableCell>
-                    <TableCell align="right" style={{ fontWeight: "bold" }}>
-                      ₹{bill.final_amount}
-                    </TableCell>
-                    <TableCell align="right" style={{ color: "#2e7d32" }}>
-                      ₹{bill.paid_amount}
-                    </TableCell>
-                    <TableCell align="right" style={{ fontWeight: "bold" }}>
-                      ₹{bill.balance_amount}
-                    </TableCell>
-                    <TableCell>
+      {/* Invoice list table / cards */}
+      <Paper elevation={3} sx={{ borderRadius: 2, overflow: "hidden", p: isMobile ? 1.5 : 0 }}>
+        {isMobile ? (
+          paginatedBills.length === 0 ? (
+            <Box text-align="center" py={4}>
+              <Typography color="text.secondary">No Bills Found.</Typography>
+            </Box>
+          ) : (
+            <Box display="flex" flexDirection="column" gap={2}>
+              {paginatedBills.map((bill) => (
+                <Card key={bill.bill_id} variant="outlined" sx={{ borderRadius: 2 }}>
+                  <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
+                    <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight="bold">
+                          {bill.member_name}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Bill ID: #{bill.bill_id}
+                        </Typography>
+                      </Box>
                       <Chip
                         label={bill.status.toUpperCase()}
                         size="small"
@@ -380,8 +357,59 @@ function Billing() {
                             : "error"
                         }
                       />
-                    </TableCell>
-                    <TableCell align="center">
+                    </Box>
+
+                    <Typography variant="caption" color="text.secondary" display="block" mb={1}>
+                      Period: {new Date(bill.billing_period_start).toLocaleDateString()} -{" "}
+                      {new Date(bill.billing_period_end).toLocaleDateString()}
+                    </Typography>
+
+                    <Divider sx={{ my: 1.5 }} />
+
+                    <Grid container spacing={1} sx={{ mb: 1.5 }}>
+                      <Grid item xs={6}>
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          Original Amount
+                        </Typography>
+                        <Typography variant="body2">₹{bill.original_amount}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          Deductions
+                        </Typography>
+                        <Typography variant="body2" style={{ color: "#d32f2f" }}>
+                          -₹{bill.absence_deduction}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={4}>
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          Final Amt
+                        </Typography>
+                        <Typography variant="body2" fontWeight="bold">
+                          ₹{bill.final_amount}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={4}>
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          Paid
+                        </Typography>
+                        <Typography variant="body2" style={{ color: "#2e7d32" }}>
+                          ₹{bill.paid_amount}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={4}>
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          Balance
+                        </Typography>
+                        <Typography variant="body2" fontWeight="bold">
+                          ₹{bill.balance_amount}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+
+                    <Divider sx={{ my: 1 }} />
+
+                    <Box display="flex" justifyContent="flex-end" pt={0.5}>
                       <Button
                         size="small"
                         variant="outlined"
@@ -390,13 +418,88 @@ function Billing() {
                       >
                         Print Invoice
                       </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+              ))}
+            </Box>
+          )
+        ) : (
+          <TableContainer sx={{ overflowX: "auto" }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell><b>ID</b></TableCell>
+                  <TableCell><b>Member Name</b></TableCell>
+                  <TableCell><b>Billing Cycle</b></TableCell>
+                  <TableCell align="right"><b>Original Amt</b></TableCell>
+                  <TableCell align="right"><b>Deductions</b></TableCell>
+                  <TableCell align="right"><b>Final Amt</b></TableCell>
+                  <TableCell align="right"><b>Paid</b></TableCell>
+                  <TableCell align="right"><b>Balance</b></TableCell>
+                  <TableCell><b>Status</b></TableCell>
+                  <TableCell align="center"><b>Actions</b></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {paginatedBills.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={10} align="center" sx={{ py: 3 }}>
+                      No Bills Found.
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                ) : (
+                  paginatedBills.map((bill) => (
+                    <TableRow key={bill.bill_id} hover>
+                      <TableCell>{bill.bill_id}</TableCell>
+                      <TableCell><b>{bill.member_name}</b></TableCell>
+                      <TableCell>
+                        {new Date(bill.billing_period_start).toLocaleDateString()} -{" "}
+                        {new Date(bill.billing_period_end).toLocaleDateString()}
+                      </TableCell>
+                      <TableCell align="right">₹{bill.original_amount}</TableCell>
+                      <TableCell align="right" style={{ color: "#d32f2f" }}>
+                        -₹{bill.absence_deduction}
+                      </TableCell>
+                      <TableCell align="right" style={{ fontWeight: "bold" }}>
+                        ₹{bill.final_amount}
+                      </TableCell>
+                      <TableCell align="right" style={{ color: "#2e7d32" }}>
+                        ₹{bill.paid_amount}
+                      </TableCell>
+                      <TableCell align="right" style={{ fontWeight: "bold" }}>
+                        ₹{bill.balance_amount}
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={bill.status.toUpperCase()}
+                          size="small"
+                          color={
+                            bill.status === "paid"
+                              ? "success"
+                              : bill.status === "partial"
+                              ? "warning"
+                              : "error"
+                          }
+                        />
+                      </TableCell>
+                      <TableCell align="center">
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          startIcon={<PrintIcon />}
+                          onClick={() => handlePrint(bill)}
+                        >
+                          Print Invoice
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"

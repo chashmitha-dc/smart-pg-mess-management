@@ -100,14 +100,9 @@ input[type="date"].MuiOutlinedInput-input::-webkit-datetime-edit {
 .MuiFormControl-root:has(input[type="date"]) .MuiInputLabel-root {
   transform: translate(14px, -9px) scale(0.75) !important;
   transform-origin: top left;
-  background-color: #ffffff !important;
+  background-color: transparent !important;
   padding: 0 6px !important;
   z-index: 1;
-}
-
-.dark .MuiFormControl-root:has(input[type="date"]) .MuiInputLabel-root {
-  background-color: #1e293b !important;
-  color: #94a3b8 !important;
 }
 
 /* Also ensure legend notched outline matches correct label width */

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import {
   Box,
   Button,
+  Card,
+  CardContent,
   Chip,
   CircularProgress,
   Divider,
@@ -24,6 +26,7 @@ import {
   InputAdornment,
   Tooltip,
   IconButton,
+  useMediaQuery,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
@@ -37,6 +40,7 @@ import { getPayments, createPayment, updatePayment } from "../../api/paymentApi"
 import { getBills } from "../../api/billingApi";
 
 function Payments() {
+  const isMobile = useMediaQuery("(max-width:767.95px)");
   const [payments, setPayments] = useState([]);
   const [bills, setBills] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -318,43 +322,27 @@ function Payments() {
         </Grid>
       </Paper>
 
-      {/* Payments list table */}
-      <Paper elevation={3} sx={{ borderRadius: 2, overflow: "hidden" }}>
-        <TableContainer sx={{ overflowX: "auto" }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell><b>Pay ID</b></TableCell>
-                <TableCell><b>Bill ID</b></TableCell>
-                <TableCell><b>Member Name</b></TableCell>
-                <TableCell align="right"><b>Amount</b></TableCell>
-                <TableCell><b>Method</b></TableCell>
-                <TableCell><b>Date</b></TableCell>
-                <TableCell><b>Txn Reference</b></TableCell>
-                <TableCell><b>Status</b></TableCell>
-                <TableCell align="center"><b>Actions</b></TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedPayments.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={9} align="center" sx={{ py: 3 }}>
-                    No Payments Logged.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                paginatedPayments.map((payment) => (
-                  <TableRow key={payment.payment_id} hover>
-                    <TableCell>{payment.payment_id}</TableCell>
-                    <TableCell>{payment.bill_id}</TableCell>
-                    <TableCell><b>{payment.member_name}</b></TableCell>
-                    <TableCell align="right" style={{ fontWeight: "bold", color: "#2e7d32" }}>
-                      ₹{payment.amount}
-                    </TableCell>
-                    <TableCell>{payment.payment_method}</TableCell>
-                    <TableCell>{new Date(payment.payment_date).toLocaleDateString()}</TableCell>
-                    <TableCell>{payment.transaction_id || "N/A"}</TableCell>
-                    <TableCell>
+      {/* Payments list table / cards */}
+      <Paper elevation={3} sx={{ borderRadius: 2, overflow: "hidden", p: isMobile ? 1.5 : 0 }}>
+        {isMobile ? (
+          paginatedPayments.length === 0 ? (
+            <Box textAlign="center" py={4}>
+              <Typography color="text.secondary">No Payments Logged.</Typography>
+            </Box>
+          ) : (
+            <Box display="flex" flexDirection="column" gap={2}>
+              {paginatedPayments.map((payment) => (
+                <Card key={payment.payment_id} variant="outlined" sx={{ borderRadius: 2 }}>
+                  <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
+                    <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight="bold">
+                          {payment.member_name}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Pay ID: #{payment.payment_id} • Bill ID: #{payment.bill_id}
+                        </Typography>
+                      </Box>
                       <Chip
                         label={payment.verification_status.toUpperCase()}
                         size="small"
@@ -366,49 +354,180 @@ function Payments() {
                             : "warning"
                         }
                       />
-                    </TableCell>
-                    <TableCell align="center">
-                      <Box display="flex" justifyContent="center" gap={1}>
-                        {payment.verification_status === "pending" && (
-                          <>
-                            <Tooltip title="Verify">
-                              <IconButton
-                                color="success"
-                                size="small"
-                                onClick={() => handleVerify(payment.payment_id, "verified")}
-                                disabled={saving}
-                              >
-                                <CheckCircleIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Reject">
-                              <IconButton
-                                color="error"
-                                size="small"
-                                onClick={() => handleVerify(payment.payment_id, "rejected")}
-                                disabled={saving}
-                              >
-                                <CancelIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                          </>
-                        )}
-                        <Button
-                          size="small"
-                          variant="text"
-                          startIcon={<PrintIcon />}
-                          onClick={() => handlePrintReceipt(payment)}
-                        >
-                          Receipt
-                        </Button>
-                      </Box>
+                    </Box>
+
+                    <Divider sx={{ my: 1.5 }} />
+
+                    <Grid container spacing={1} sx={{ mb: 1.5 }}>
+                      <Grid item xs={6}>
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          Amount Paid
+                        </Typography>
+                        <Typography variant="body1" fontWeight="bold" style={{ color: "#2e7d32" }}>
+                          ₹{payment.amount}
+                        </Typography>
+                      </Grid>
+
+                      <Grid item xs={6}>
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          Method
+                        </Typography>
+                        <Typography variant="body2" fontWeight="500">
+                          {payment.payment_method}
+                        </Typography>
+                      </Grid>
+
+                      <Grid item xs={6}>
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          Date
+                        </Typography>
+                        <Typography variant="body2">
+                          {new Date(payment.payment_date).toLocaleDateString()}
+                        </Typography>
+                      </Grid>
+
+                      <Grid item xs={6}>
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          Txn Reference
+                        </Typography>
+                        <Typography variant="body2" sx={{ wordBreak: "break-all" }}>
+                          {payment.transaction_id || "N/A"}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+
+                    <Divider sx={{ my: 1 }} />
+
+                    <Box display="flex" justifyContent="flex-end" alignItems="center" gap={1} pt={0.5}>
+                      {payment.verification_status === "pending" && (
+                        <>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            color="success"
+                            startIcon={<CheckCircleIcon />}
+                            onClick={() => handleVerify(payment.payment_id, "verified")}
+                            disabled={saving}
+                          >
+                            Verify
+                          </Button>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            color="error"
+                            startIcon={<CancelIcon />}
+                            onClick={() => handleVerify(payment.payment_id, "rejected")}
+                            disabled={saving}
+                          >
+                            Reject
+                          </Button>
+                        </>
+                      )}
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        startIcon={<PrintIcon />}
+                        onClick={() => handlePrintReceipt(payment)}
+                      >
+                        Receipt
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+              ))}
+            </Box>
+          )
+        ) : (
+          <TableContainer sx={{ overflowX: "auto" }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell><b>Pay ID</b></TableCell>
+                  <TableCell><b>Bill ID</b></TableCell>
+                  <TableCell><b>Member Name</b></TableCell>
+                  <TableCell align="right"><b>Amount</b></TableCell>
+                  <TableCell><b>Method</b></TableCell>
+                  <TableCell><b>Date</b></TableCell>
+                  <TableCell><b>Txn Reference</b></TableCell>
+                  <TableCell><b>Status</b></TableCell>
+                  <TableCell align="center"><b>Actions</b></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {paginatedPayments.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={9} align="center" sx={{ py: 3 }}>
+                      No Payments Logged.
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                ) : (
+                  paginatedPayments.map((payment) => (
+                    <TableRow key={payment.payment_id} hover>
+                      <TableCell>{payment.payment_id}</TableCell>
+                      <TableCell>{payment.bill_id}</TableCell>
+                      <TableCell><b>{payment.member_name}</b></TableCell>
+                      <TableCell align="right" style={{ fontWeight: "bold", color: "#2e7d32" }}>
+                        ₹{payment.amount}
+                      </TableCell>
+                      <TableCell>{payment.payment_method}</TableCell>
+                      <TableCell>{new Date(payment.payment_date).toLocaleDateString()}</TableCell>
+                      <TableCell>{payment.transaction_id || "N/A"}</TableCell>
+                      <TableCell>
+                        <Chip
+                          label={payment.verification_status.toUpperCase()}
+                          size="small"
+                          color={
+                            payment.verification_status === "verified"
+                              ? "success"
+                              : payment.verification_status === "rejected"
+                              ? "error"
+                              : "warning"
+                          }
+                        />
+                      </TableCell>
+                      <TableCell align="center">
+                        <Box display="flex" justifyContent="center" gap={1}>
+                          {payment.verification_status === "pending" && (
+                            <>
+                              <Tooltip title="Verify">
+                                <IconButton
+                                  color="success"
+                                  size="small"
+                                  onClick={() => handleVerify(payment.payment_id, "verified")}
+                                  disabled={saving}
+                                >
+                                  <CheckCircleIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Reject">
+                                <IconButton
+                                  color="error"
+                                  size="small"
+                                  onClick={() => handleVerify(payment.payment_id, "rejected")}
+                                  disabled={saving}
+                                >
+                                  <CancelIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            </>
+                          )}
+                          <Button
+                            size="small"
+                            variant="text"
+                            startIcon={<PrintIcon />}
+                            onClick={() => handlePrintReceipt(payment)}
+                          >
+                            Receipt
+                          </Button>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"

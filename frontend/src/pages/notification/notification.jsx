@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import {
   Box,
   Button,
+  Card,
+  CardContent,
   Chip,
   CircularProgress,
   Divider,
@@ -22,6 +24,7 @@ import {
   DialogContent,
   DialogActions,
   InputAdornment,
+  useMediaQuery,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import AddIcon from "@mui/icons-material/Add";
@@ -32,6 +35,7 @@ import { getNotifications, sendNotification, deleteNotification } from "../../ap
 import { getMembers } from "../../api/memberApi";
 
 function Notifications() {
+  const isMobile = useMediaQuery("(max-width:767.95px)");
   const [notifications, setNotifications] = useState([]);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -237,42 +241,40 @@ function Notifications() {
         </Grid>
       </Paper>
 
-      {/* Notifications grid table */}
-      <Paper elevation={3} sx={{ borderRadius: 2, overflow: "hidden" }}>
-        <TableContainer sx={{ overflowX: "auto" }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell><b>ID</b></TableCell>
-                <TableCell><b>Recipient</b></TableCell>
-                <TableCell><b>Type</b></TableCell>
-                <TableCell><b>Title</b></TableCell>
-                <TableCell><b>Message</b></TableCell>
-                <TableCell><b>Date Sent</b></TableCell>
-                <TableCell align="center"><b>Actions</b></TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedNotifications.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
-                    No Notifications Found.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                paginatedNotifications.map((n) => (
-                  <TableRow key={n.notification_id} hover>
-                    <TableCell>{n.notification_id}</TableCell>
-                    <TableCell><b>{n.member_name}</b></TableCell>
-                    <TableCell>
+      {/* Notifications grid table / mobile cards */}
+      <Paper elevation={3} sx={{ borderRadius: 2, overflow: "hidden", p: isMobile ? 1.5 : 0 }}>
+        {isMobile ? (
+          paginatedNotifications.length === 0 ? (
+            <Box textAlign="center" py={4}>
+              <Typography color="text.secondary">No Notifications Found.</Typography>
+            </Box>
+          ) : (
+            <Box display="flex" flexDirection="column" gap={2}>
+              {paginatedNotifications.map((n) => (
+                <Card key={n.notification_id} variant="outlined" sx={{ borderRadius: 2 }}>
+                  <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
+                    <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight="bold">
+                          {n.title}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          To: {n.member_name} • #{n.notification_id}
+                        </Typography>
+                      </Box>
                       <Chip label={n.type.toUpperCase()} size="small" variant="outlined" />
-                    </TableCell>
-                    <TableCell style={{ fontWeight: "bold" }}>{n.title}</TableCell>
-                    <TableCell sx={{ maxWidth: 300, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    </Box>
+
+                    <Typography variant="body2" color="text.primary" sx={{ my: 1.5 }}>
                       {n.message}
-                    </TableCell>
-                    <TableCell>{new Date(n.created_at).toLocaleString()}</TableCell>
-                    <TableCell align="center">
+                    </Typography>
+
+                    <Divider sx={{ my: 1 }} />
+
+                    <Box display="flex" justifyContent="space-between" alignItems="center" pt={0.5}>
+                      <Typography variant="caption" color="text.secondary">
+                        {new Date(n.created_at).toLocaleString()}
+                      </Typography>
                       <Button
                         size="small"
                         color="error"
@@ -280,13 +282,62 @@ function Notifications() {
                       >
                         Delete
                       </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+              ))}
+            </Box>
+          )
+        ) : (
+          <TableContainer sx={{ overflowX: "auto" }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell><b>ID</b></TableCell>
+                  <TableCell><b>Recipient</b></TableCell>
+                  <TableCell><b>Type</b></TableCell>
+                  <TableCell><b>Title</b></TableCell>
+                  <TableCell><b>Message</b></TableCell>
+                  <TableCell><b>Date Sent</b></TableCell>
+                  <TableCell align="center"><b>Actions</b></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {paginatedNotifications.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                      No Notifications Found.
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                ) : (
+                  paginatedNotifications.map((n) => (
+                    <TableRow key={n.notification_id} hover>
+                      <TableCell>{n.notification_id}</TableCell>
+                      <TableCell><b>{n.member_name}</b></TableCell>
+                      <TableCell>
+                        <Chip label={n.type.toUpperCase()} size="small" variant="outlined" />
+                      </TableCell>
+                      <TableCell style={{ fontWeight: "bold" }}>{n.title}</TableCell>
+                      <TableCell sx={{ maxWidth: 300, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {n.message}
+                      </TableCell>
+                      <TableCell>{new Date(n.created_at).toLocaleString()}</TableCell>
+                      <TableCell align="center">
+                        <Button
+                          size="small"
+                          color="error"
+                          onClick={() => handleDelete(n.notification_id)}
+                        >
+                          Delete
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"

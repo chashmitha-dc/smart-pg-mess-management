@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import {
   Box,
   Button,
+  Card,
+  CardContent,
   Chip,
   CircularProgress,
   Divider,
@@ -22,6 +24,7 @@ import {
   DialogContent,
   DialogActions,
   InputAdornment,
+  useMediaQuery,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import toast from "react-hot-toast";
@@ -29,6 +32,7 @@ import toast from "react-hot-toast";
 import { getComplaints, updateComplaintStatus } from "../../api/complaintApi";
 
 function Complaints() {
+  const isMobile = useMediaQuery("(max-width:767.95px)");
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -202,48 +206,50 @@ function Complaints() {
         </Grid>
       </Paper>
 
-      {/* Complaints Grid table */}
-      <Paper elevation={3} sx={{ borderRadius: 2, overflow: "hidden" }}>
-        <TableContainer sx={{ overflowX: "auto" }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell><b>ID</b></TableCell>
-                <TableCell><b>Member Name</b></TableCell>
-                <TableCell><b>Category</b></TableCell>
-                <TableCell><b>Description</b></TableCell>
-                <TableCell><b>Date Created</b></TableCell>
-                <TableCell><b>Status</b></TableCell>
-                <TableCell align="center"><b>Actions</b></TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedComplaints.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
-                    No Complaints Logged.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                paginatedComplaints.map((c) => (
-                  <TableRow key={c.complaint_id} hover>
-                    <TableCell>{c.complaint_id}</TableCell>
-                    <TableCell><b>{c.member_name}</b></TableCell>
-                    <TableCell>
-                      <Chip label={c.category} size="small" variant="outlined" />
-                    </TableCell>
-                    <TableCell sx={{ maxWidth: 280, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {c.description}
-                    </TableCell>
-                    <TableCell>{new Date(c.created_at).toLocaleString()}</TableCell>
-                    <TableCell>
+      {/* Complaints list table / cards */}
+      <Paper elevation={3} sx={{ borderRadius: 2, overflow: "hidden", p: isMobile ? 1.5 : 0 }}>
+        {isMobile ? (
+          paginatedComplaints.length === 0 ? (
+            <Box textAlign="center" py={4}>
+              <Typography color="text.secondary">No Complaints Logged.</Typography>
+            </Box>
+          ) : (
+            <Box display="flex" flexDirection="column" gap={2}>
+              {paginatedComplaints.map((c) => (
+                <Card key={c.complaint_id} variant="outlined" sx={{ borderRadius: 2 }}>
+                  <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
+                    <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <Typography variant="subtitle1" fontWeight="bold">
+                          {c.member_name}
+                        </Typography>
+                        <Chip label={c.category} size="small" variant="outlined" />
+                      </Box>
                       <Chip
                         label={c.status.replace("_", " ").toUpperCase()}
                         size="small"
                         color={getStatusColor(c.status)}
                       />
-                    </TableCell>
-                    <TableCell align="center">
+                    </Box>
+
+                    <Typography variant="caption" color="text.secondary" display="block" mb={1}>
+                      ID: #{c.complaint_id} • Logged: {new Date(c.created_at).toLocaleString()}
+                    </Typography>
+
+                    <Divider sx={{ my: 1.5 }} />
+
+                    <Box mb={1.5}>
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        Description
+                      </Typography>
+                      <Typography variant="body2" sx={{ whiteSpace: "pre-wrap" }}>
+                        {c.description}
+                      </Typography>
+                    </Box>
+
+                    <Divider sx={{ my: 1 }} />
+
+                    <Box display="flex" justifyContent="flex-end" pt={0.5}>
                       <Button
                         size="small"
                         variant="outlined"
@@ -251,13 +257,68 @@ function Complaints() {
                       >
                         Update Status
                       </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+              ))}
+            </Box>
+          )
+        ) : (
+          <TableContainer sx={{ overflowX: "auto" }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell><b>ID</b></TableCell>
+                  <TableCell><b>Member Name</b></TableCell>
+                  <TableCell><b>Category</b></TableCell>
+                  <TableCell><b>Description</b></TableCell>
+                  <TableCell><b>Date Created</b></TableCell>
+                  <TableCell><b>Status</b></TableCell>
+                  <TableCell align="center"><b>Actions</b></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {paginatedComplaints.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                      No Complaints Logged.
                     </TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                ) : (
+                  paginatedComplaints.map((c) => (
+                    <TableRow key={c.complaint_id} hover>
+                      <TableCell>{c.complaint_id}</TableCell>
+                      <TableCell><b>{c.member_name}</b></TableCell>
+                      <TableCell>
+                        <Chip label={c.category} size="small" variant="outlined" />
+                      </TableCell>
+                      <TableCell sx={{ maxWidth: 280, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {c.description}
+                      </TableCell>
+                      <TableCell>{new Date(c.created_at).toLocaleString()}</TableCell>
+                      <TableCell>
+                        <Chip
+                          label={c.status.replace("_", " ").toUpperCase()}
+                          size="small"
+                          color={getStatusColor(c.status)}
+                        />
+                      </TableCell>
+                      <TableCell align="center">
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => handleOpenStatusChange(c)}
+                        >
+                          Update Status
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"

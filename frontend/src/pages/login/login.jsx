@@ -18,6 +18,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  useMediaQuery,
 } from "@mui/material";
 import {
   Visibility,
@@ -320,6 +321,7 @@ function Login() {
     }
   };
 
+  const isMobile = useMediaQuery("(max-width:767.95px)");
   const themeColor = isMember ? "#ec4899" : "#1d4ed8";
   const hoverColor = isMember ? "#be185d" : "#1e3a8a";
 
@@ -333,6 +335,8 @@ function Login() {
         justifyContent: "center",
         alignItems: "center",
         position: "relative",
+        px: { xs: 2, sm: 3 },
+        py: { xs: 2, sm: 4 },
         "&::before": {
           content: '""',
           position: "absolute",
@@ -340,145 +344,101 @@ function Login() {
           left: 0,
           right: 0,
           bottom: 0,
-          backgroundColor: "rgba(0, 0, 0, 0.2)",
-          backdropFilter: "blur(2px)",
+          backgroundColor: isMobile ? "rgba(15, 23, 42, 0.7)" : "rgba(0, 0, 0, 0.2)",
+          backdropFilter: isMobile ? "blur(8px)" : "blur(2px)",
           zIndex: 1,
         },
       }}
     >
-      <Card
-        elevation={12}
-        sx={{
-          width: 900,
-          maxWidth: "95vw",
-          height: { xs: "auto", md: 540 },
-          display: "flex",
-          borderRadius: 6,
-          overflow: "hidden",
-          zIndex: 2,
-          boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
-        }}
-      >
-        {/* Left Side Panel */}
+      {isMobile ? (
+        /* Dedicated Mobile App Glassmorphism Container (<768px) */
         <Box
           sx={{
-            width: { xs: "0%", md: "40%" },
-            display: { xs: "none", md: "flex" },
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            p: 4,
-            textAlign: "center",
-            background: isMember
-              ? "linear-gradient(135deg, #ec4899, #be185d)"
-              : "linear-gradient(135deg, #1d4ed8, #1e3a8a)",
-            color: "white",
-            transition: "background 0.6s ease-in-out",
-          }}
-        >
-          {/* Stylized Modern Home & Dining Logo */}
-          <Box
-            sx={{
-              mb: 3,
-              filter: "drop-shadow(0px 4px 10px rgba(0, 0, 0, 0.25))",
-            }}
-          >
-            <svg
-              width="110"
-              height="110"
-              viewBox="0 0 100 100"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle
-                cx="50"
-                cy="50"
-                r="46"
-                stroke="#e9c46a"
-                strokeWidth="3.5"
-                fill="rgba(255, 255, 255, 0.08)"
-              />
-              <path
-                d="M50 18 L82 44 V78 C82 80 80 82 78 82 H22 C20 82 18 80 18 78 V44 L50 18 Z"
-                stroke="#ffffff"
-                strokeWidth="4.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M42 42 V64"
-                stroke="#e9c46a"
-                strokeWidth="3.5"
-                strokeLinecap="round"
-              />
-              <path
-                d="M37 42 H47"
-                stroke="#e9c46a"
-                strokeWidth="2.5"
-              />
-              <path
-                d="M58 42 C58 52 58 52 58 64"
-                stroke="#e9c46a"
-                strokeWidth="3.5"
-                strokeLinecap="round"
-              />
-              <path
-                d="M54 42 C54 48 62 48 62 42"
-                stroke="#e9c46a"
-                strokeWidth="2.5"
-              />
-            </svg>
-          </Box>
-
-          <Typography
-            variant="h6"
-            sx={{ opacity: 0.9, letterSpacing: 1, textTransform: "uppercase" }}
-          >
-            Welcome to
-          </Typography>
-          <Typography
-            variant="h4"
-            fontWeight="bold"
-            sx={{ mt: 1, letterSpacing: 0.5 }}
-          >
-            Smart Mess Portal
-          </Typography>
-        </Box>
-
-        {/* Right Side Panel */}
-        <Box
-          sx={{
-            width: { xs: "100%", md: "60%" },
-            p: { xs: 4, md: 5 },
+            zIndex: 2,
+            width: "100%",
+            maxWidth: "380px",
+            my: "auto",
             display: "flex",
             flexDirection: "column",
-            justifyContent: "space-between",
-            backgroundColor: "background.paper",
+            alignItems: "stretch",
           }}
         >
-          {/* Top Toggle Switch Pill */}
-          <Box display="flex" justifyContent="flex-end" mb={2}>
+          {/* Top Brand Logo & App Header */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              mb: 2.5,
+              textAlign: "center",
+            }}
+          >
             <Box
               sx={{
-                backgroundColor: "#f0f2f5",
-                borderRadius: "24px",
+                width: 56,
+                height: 56,
+                borderRadius: "16px",
+                background: isMember
+                  ? "linear-gradient(135deg, #ec4899, #be185d)"
+                  : "linear-gradient(135deg, #1d4ed8, #1e3a8a)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 8px 24px rgba(0, 0, 0, 0.3)",
+                mb: 1,
+                transition: "all 0.4s ease",
+              }}
+            >
+              <Home sx={{ color: "#ffffff", fontSize: 32 }} />
+            </Box>
+            <Typography
+              variant="h5"
+              fontWeight="800"
+              sx={{ color: "white", letterSpacing: "-0.5px" }}
+            >
+              SmartPG Portal
+            </Typography>
+            <Typography variant="caption" sx={{ color: "rgba(255, 255, 255, 0.75)" }}>
+              Digital Mess & PG Operations
+            </Typography>
+          </Box>
+
+          {/* Glassmorphism Form Container */}
+          <Box
+            sx={{
+              width: "100%",
+              borderRadius: "24px",
+              p: 3,
+              background: "rgba(255, 255, 255, 0.92)",
+              backdropFilter: "blur(20px)",
+              boxShadow: "0 20px 40px rgba(0, 0, 0, 0.35)",
+              border: "1px solid rgba(255, 255, 255, 0.5)",
+            }}
+          >
+            {/* Modern Segmented Control Role Switcher */}
+            <Box
+              sx={{
+                backgroundColor: "#e2e8f0",
+                borderRadius: "16px",
                 p: "4px",
                 display: "flex",
-                border: "1px solid #e0e0e0",
+                mb: 2.5,
               }}
             >
               <Box
                 onClick={() => handleToggle("owner")}
                 sx={{
-                  backgroundColor: !isMember ? "#1d4ed8" : "transparent",
-                  color: !isMember ? "#ffffff" : "#757575",
-                  borderRadius: "20px",
-                  px: 3,
-                  py: 0.8,
-                  fontSize: "0.85rem",
+                  flex: 1,
+                  textAlign: "center",
+                  backgroundColor: !isMember ? themeColor : "transparent",
+                  color: !isMember ? "#ffffff" : "#64748b",
+                  borderRadius: "12px",
+                  py: 1,
+                  fontSize: "0.875rem",
                   fontWeight: "bold",
                   cursor: "pointer",
-                  transition: "all 0.3s ease",
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  boxShadow: !isMember ? "0 4px 12px rgba(0, 0, 0, 0.15)" : "none",
                   userSelect: "none",
                 }}
               >
@@ -487,218 +447,563 @@ function Login() {
               <Box
                 onClick={() => handleToggle("member")}
                 sx={{
-                  backgroundColor: isMember ? "#ec4899" : "transparent",
-                  color: isMember ? "#ffffff" : "#757575",
-                  borderRadius: "20px",
-                  px: 3,
-                  py: 0.8,
-                  fontSize: "0.85rem",
+                  flex: 1,
+                  textAlign: "center",
+                  backgroundColor: isMember ? themeColor : "transparent",
+                  color: isMember ? "#ffffff" : "#64748b",
+                  borderRadius: "12px",
+                  py: 1,
+                  fontSize: "0.875rem",
                   fontWeight: "bold",
                   cursor: "pointer",
-                  transition: "all 0.3s ease",
+                  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                  boxShadow: isMember ? "0 4px 12px rgba(0, 0, 0, 0.15)" : "none",
                   userSelect: "none",
                 }}
               >
                 Member
               </Box>
             </Box>
-          </Box>
 
-          {/* Form */}
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            autoComplete="off"
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              flexGrow: 1,
-            }}
-          >
-            <Typography variant="h5" align="center" fontWeight="bold">
-              {isMember ? "Member Login" : "Owner Login"}
+            <Typography variant="h6" align="center" fontWeight="800" color="text.primary" mb={2}>
+              {isMember ? "Resident Login" : "PG Owner Login"}
             </Typography>
 
-            {/* Slide animated bar */}
-            <Box
-              sx={{
-                width: 70,
-                height: 3,
-                backgroundColor: themeColor,
-                margin: "10px auto 25px auto",
-                borderRadius: 1,
-                transition: "background-color 0.6s ease",
-              }}
-            />
-
             {error && (
-              <Alert severity="error" sx={{ mb: 2 }}>
+              <Alert severity="error" sx={{ mb: 2, borderRadius: "12px", fontSize: "0.8rem" }}>
                 {error}
               </Alert>
             )}
 
-            {isMember ? (
+            <Box component="form" onSubmit={handleSubmit} autoComplete="off">
+              {isMember ? (
+                <TextField
+                  required
+                  fullWidth
+                  label="Registered Phone"
+                  name="phone"
+                  type="tel"
+                  autoComplete="username"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  inputProps={{ maxLength: 10 }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Phone sx={{ color: themeColor, fontSize: 20 }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    mb: 2,
+                    "& .MuiOutlinedInput-root": {
+                      height: "50px",
+                      borderRadius: "25px",
+                      backgroundColor: "white",
+                    },
+                  }}
+                />
+              ) : (
+                <TextField
+                  required
+                  fullWidth
+                  label="Email Address"
+                  name="email"
+                  type="email"
+                  autoComplete="username"
+                  value={formData.email}
+                  onChange={handleChange}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Mail sx={{ color: themeColor, fontSize: 20 }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    mb: 2,
+                    "& .MuiOutlinedInput-root": {
+                      height: "50px",
+                      borderRadius: "25px",
+                      backgroundColor: "white",
+                    },
+                  }}
+                />
+              )}
+
               <TextField
                 required
                 fullWidth
-                label="Registered Phone Number"
-                name="phone"
-                type="tel"
-                autoComplete="username"
-                value={formData.phone}
+                label="Password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                value={formData.password}
                 onChange={handleChange}
-                inputProps={{ maxLength: 10 }}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
-                      <Phone sx={{ color: themeColor, transition: "color 0.6s ease" }} />
+                      <Lock sx={{ color: themeColor, fontSize: 20 }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">
+                        {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                      </IconButton>
                     </InputAdornment>
                   ),
                 }}
                 sx={{
-                  mb: 3,
+                  mb: 1.5,
                   "& .MuiOutlinedInput-root": {
-                    borderRadius: "24px",
+                    height: "50px",
+                    borderRadius: "25px",
+                    backgroundColor: "white",
                   },
                 }}
               />
-            ) : (
-              <TextField
-                required
-                fullWidth
-                label="Email Address"
-                name="email"
-                type="email"
-                autoComplete="username"
-                value={formData.email}
-                onChange={handleChange}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Mail sx={{ color: themeColor, transition: "color 0.6s ease" }} />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{
-                  mb: 3,
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "24px",
-                  },
-                }}
-              />
-            )}
 
-            <TextField
-              required
-              fullWidth
-              label="Password"
-              name="password"
-              type={showPassword ? "text" : "password"}
-              autoComplete="current-password"
-              value={formData.password}
-              onChange={handleChange}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Lock sx={{ color: themeColor, transition: "color 0.6s ease" }} />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                mb: 1,
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "24px",
-                },
-              }}
-            />
-
-            {/* Checkbox and Forgot Password Link */}
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} width="100%">
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={showPassword}
-                    onChange={(e) => setShowPassword(e.target.checked)}
-                    sx={{
-                      color: themeColor,
-                      "&.Mui-checked": {
-                        color: themeColor,
-                      },
-                    }}
-                  />
-                }
-                label={
-                  <Typography variant="body2" color="text.secondary">
-                    Show Password
-                  </Typography>
-                }
-              />
-              <Link
-                component="button"
-                variant="body2"
-                type="button"
-                onClick={() => {
-                  setForgotForm({ identity: isMember ? formData.phone : formData.email });
-                  setForgotOpen(true);
-                }}
-                underline="hover"
-                sx={{ color: themeColor, fontWeight: "bold" }}
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                flexWrap="wrap"
+                gap={1}
+                mb={2.5}
+                px={0.5}
               >
-                Forgot Password?
-              </Link>
-            </Box>
-
-            <Button
-              fullWidth
-              variant="contained"
-              size="large"
-              type="submit"
-              disabled={loading}
-              sx={{
-                borderRadius: "24px",
-                py: 1.5,
-                fontWeight: "bold",
-                backgroundColor: themeColor,
-                "&:hover": {
-                  backgroundColor: hoverColor,
-                },
-                transition: "background-color 0.6s ease",
-                boxShadow: "0px 4px 12px rgba(0,0,0,0.15)",
-              }}
-            >
-              {loading ? <CircularProgress size={24} color="inherit" /> : "LOGIN"}
-            </Button>
-
-            {/* SaaS Create Account Link (Owner Only) */}
-            {!isMember && (
-              <Box textAlign="center" mt={2}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      size="small"
+                      checked={showPassword}
+                      onChange={(e) => setShowPassword(e.target.checked)}
+                      sx={{ color: themeColor, "&.Mui-checked": { color: themeColor } }}
+                    />
+                  }
+                  label={
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: "0.8rem" }}>
+                      Show Password
+                    </Typography>
+                  }
+                  sx={{ mr: 0 }}
+                />
                 <Link
                   component="button"
                   variant="body2"
                   type="button"
-                  onClick={() => setRegisterOpen(true)}
+                  onClick={() => {
+                    setForgotForm({ identity: isMember ? formData.phone : formData.email });
+                    setForgotOpen(true);
+                  }}
+                  underline="hover"
+                  sx={{ color: themeColor, fontWeight: "bold", fontSize: "0.8rem" }}
+                >
+                  Forgot Password?
+                </Link>
+              </Box>
+
+              <Button
+                fullWidth
+                variant="contained"
+                type="submit"
+                disabled={loading}
+                sx={{
+                  height: "50px",
+                  borderRadius: "25px",
+                  fontWeight: "800",
+                  fontSize: "0.95rem",
+                  letterSpacing: "0.5px",
+                  backgroundColor: themeColor,
+                  "&:hover": {
+                    backgroundColor: hoverColor,
+                  },
+                  boxShadow: `0 8px 20px ${isMember ? "rgba(236, 72, 153, 0.3)" : "rgba(29, 78, 216, 0.3)"}`,
+                  transition: "all 0.3s ease",
+                }}
+              >
+                {loading ? <CircularProgress size={24} color="inherit" /> : "LOG IN"}
+              </Button>
+
+              {!isMember && (
+                <Box textAlign="center" mt={2}>
+                  <Link
+                    component="button"
+                    variant="body2"
+                    type="button"
+                    onClick={() => setRegisterOpen(true)}
+                    underline="hover"
+                    sx={{ color: themeColor, fontWeight: "bold", fontSize: "0.85rem" }}
+                  >
+                    Create New Owner Account
+                  </Link>
+                </Box>
+              )}
+            </Box>
+          </Box>
+
+          <Box sx={{ textAlign: "center", mt: 2.5 }}>
+            <Typography variant="caption" sx={{ color: "rgba(255, 255, 255, 0.65)", fontSize: "0.7rem" }}>
+              SmartPG Digital Security • © 2026 All rights reserved
+            </Typography>
+          </Box>
+        </Box>
+      ) : (
+        /* Original Unchanged Desktop Layout (>=768px) */
+        <Card
+          elevation={12}
+          sx={{
+            width: 900,
+            maxWidth: "95vw",
+            height: 540,
+            display: "flex",
+            borderRadius: 6,
+            overflow: "hidden",
+            zIndex: 2,
+            boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+          }}
+        >
+          {/* Left Side Panel */}
+          <Box
+            sx={{
+              width: "40%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              p: 4,
+              textAlign: "center",
+              background: isMember
+                ? "linear-gradient(135deg, #ec4899, #be185d)"
+                : "linear-gradient(135deg, #1d4ed8, #1e3a8a)",
+              color: "white",
+              transition: "background 0.6s ease-in-out",
+            }}
+          >
+            <Box
+              sx={{
+                mb: 3,
+                filter: "drop-shadow(0px 4px 10px rgba(0, 0, 0, 0.25))",
+              }}
+            >
+              <svg
+                width="110"
+                height="110"
+                viewBox="0 0 100 100"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="46"
+                  stroke="#e9c46a"
+                  strokeWidth="3.5"
+                  fill="rgba(255, 255, 255, 0.08)"
+                />
+                <path
+                  d="M50 18 L82 44 V78 C82 80 80 82 78 82 H22 C20 82 18 80 18 78 V44 L50 18 Z"
+                  stroke="#ffffff"
+                  strokeWidth="4.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M42 42 V64"
+                  stroke="#e9c46a"
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M37 42 H47"
+                  stroke="#e9c46a"
+                  strokeWidth="2.5"
+                />
+                <path
+                  d="M58 42 C58 52 58 52 58 64"
+                  stroke="#e9c46a"
+                  strokeWidth="3.5"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M54 42 C54 48 62 48 62 42"
+                  stroke="#e9c46a"
+                  strokeWidth="2.5"
+                />
+              </svg>
+            </Box>
+
+            <Typography
+              variant="h6"
+              sx={{ opacity: 0.9, letterSpacing: 1, textTransform: "uppercase" }}
+            >
+              Welcome to
+            </Typography>
+            <Typography
+              variant="h4"
+              fontWeight="bold"
+              sx={{ mt: 1, letterSpacing: 0.5 }}
+            >
+              Smart Mess Portal
+            </Typography>
+          </Box>
+
+          {/* Right Side Panel */}
+          <Box
+            sx={{
+              width: "60%",
+              p: 5,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              backgroundColor: "background.paper",
+            }}
+          >
+            {/* Top Toggle Switch Pill */}
+            <Box display="flex" justifyContent="flex-end" mb={2}>
+              <Box
+                sx={{
+                  backgroundColor: "#f0f2f5",
+                  borderRadius: "24px",
+                  p: "4px",
+                  display: "flex",
+                  border: "1px solid #e0e0e0",
+                }}
+              >
+                <Box
+                  onClick={() => handleToggle("owner")}
+                  sx={{
+                    backgroundColor: !isMember ? "#1d4ed8" : "transparent",
+                    color: !isMember ? "#ffffff" : "#757575",
+                    borderRadius: "20px",
+                    px: 3,
+                    py: 0.8,
+                    fontSize: "0.85rem",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                    userSelect: "none",
+                  }}
+                >
+                  Owner
+                </Box>
+                <Box
+                  onClick={() => handleToggle("member")}
+                  sx={{
+                    backgroundColor: isMember ? "#ec4899" : "transparent",
+                    color: isMember ? "#ffffff" : "#757575",
+                    borderRadius: "20px",
+                    px: 3,
+                    py: 0.8,
+                    fontSize: "0.85rem",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                    userSelect: "none",
+                  }}
+                >
+                  Member
+                </Box>
+              </Box>
+            </Box>
+
+            {/* Form */}
+            <Box
+              component="form"
+              onSubmit={handleSubmit}
+              autoComplete="off"
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                flexGrow: 1,
+              }}
+            >
+              <Typography variant="h5" align="center" fontWeight="bold">
+                {isMember ? "Member Login" : "Owner Login"}
+              </Typography>
+
+              {/* Slide animated bar */}
+              <Box
+                sx={{
+                  width: 70,
+                  height: 3,
+                  backgroundColor: themeColor,
+                  margin: "10px auto 25px auto",
+                  borderRadius: 1,
+                  transition: "background-color 0.6s ease",
+                }}
+              />
+
+              {error && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                  {error}
+                </Alert>
+              )}
+
+              {isMember ? (
+                <TextField
+                  required
+                  fullWidth
+                  label="Registered Phone Number"
+                  name="phone"
+                  type="tel"
+                  autoComplete="username"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  inputProps={{ maxLength: 10 }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Phone sx={{ color: themeColor, transition: "color 0.6s ease" }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    mb: 3,
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "24px",
+                    },
+                  }}
+                />
+              ) : (
+                <TextField
+                  required
+                  fullWidth
+                  label="Email Address"
+                  name="email"
+                  type="email"
+                  autoComplete="username"
+                  value={formData.email}
+                  onChange={handleChange}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Mail sx={{ color: themeColor, transition: "color 0.6s ease" }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    mb: 3,
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "24px",
+                    },
+                  }}
+                />
+              )}
+
+              <TextField
+                required
+                fullWidth
+                label="Password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                value={formData.password}
+                onChange={handleChange}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock sx={{ color: themeColor, transition: "color 0.6s ease" }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  mb: 1,
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "24px",
+                  },
+                }}
+              />
+
+              {/* Checkbox and Forgot Password Link */}
+              <Box display="flex" justifyContent="space-between" alignItems="center" mb={3} width="100%">
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={showPassword}
+                      onChange={(e) => setShowPassword(e.target.checked)}
+                      sx={{
+                        color: themeColor,
+                        "&.Mui-checked": {
+                          color: themeColor,
+                        },
+                      }}
+                    />
+                  }
+                  label={
+                    <Typography variant="body2" color="text.secondary">
+                      Show Password
+                    </Typography>
+                  }
+                />
+                <Link
+                  component="button"
+                  variant="body2"
+                  type="button"
+                  onClick={() => {
+                    setForgotForm({ identity: isMember ? formData.phone : formData.email });
+                    setForgotOpen(true);
+                  }}
                   underline="hover"
                   sx={{ color: themeColor, fontWeight: "bold" }}
                 >
-                  Create Account
+                  Forgot Password?
                 </Link>
               </Box>
-            )}
-          </Box>
 
-          <Typography variant="caption" color="text.secondary" align="center">
-            SmartPG Digital Mess Security Portal • © 2026 All rights reserved.
-          </Typography>
-        </Box>
-      </Card>
+              <Button
+                fullWidth
+                variant="contained"
+                size="large"
+                type="submit"
+                disabled={loading}
+                sx={{
+                  borderRadius: "24px",
+                  py: 1.5,
+                  fontWeight: "bold",
+                  backgroundColor: themeColor,
+                  "&:hover": {
+                    backgroundColor: hoverColor,
+                  },
+                  transition: "background-color 0.6s ease",
+                  boxShadow: "0px 4px 12px rgba(0,0,0,0.15)",
+                }}
+              >
+                {loading ? <CircularProgress size={24} color="inherit" /> : "LOGIN"}
+              </Button>
+
+              {/* SaaS Create Account Link (Owner Only) */}
+              {!isMember && (
+                <Box textAlign="center" mt={2}>
+                  <Link
+                    component="button"
+                    variant="body2"
+                    type="button"
+                    onClick={() => setRegisterOpen(true)}
+                    underline="hover"
+                    sx={{ color: themeColor, fontWeight: "bold" }}
+                  >
+                    Create Account
+                  </Link>
+                </Box>
+              )}
+            </Box>
+
+            <Typography variant="caption" color="text.secondary" align="center">
+              SmartPG Digital Mess Security Portal • © 2026 All rights reserved.
+            </Typography>
+          </Box>
+        </Card>
+      )}
 
       {/* SaaS Register Dialog (Owner Registration) */}
       <Dialog open={registerOpen} onClose={() => setRegisterOpen(false)} fullWidth maxWidth="sm">

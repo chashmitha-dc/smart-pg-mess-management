@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import {
   Box,
   Button,
+  Card,
+  CardContent,
   Chip,
   CircularProgress,
   Divider,
@@ -19,6 +21,7 @@ import {
   Typography,
   Tooltip,
   IconButton,
+  useMediaQuery,
 } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -27,6 +30,7 @@ import toast from "react-hot-toast";
 import { getAbsences, approveLeave, rejectLeave } from "../../api/absenceApi";
 
 function Leaves() {
+  const isMobile = useMediaQuery("(max-width:767.95px)");
   const [leaves, setLeaves] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actioning, setActioning] = useState(false);
@@ -171,46 +175,34 @@ function Leaves() {
         </Grid>
       </Paper>
 
-      {/* Table grid */}
-      <Paper elevation={3} sx={{ borderRadius: 2, overflow: "hidden" }}>
-        <TableContainer sx={{ overflowX: "auto" }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell><b>ID</b></TableCell>
-                <TableCell><b>Member Name</b></TableCell>
-                <TableCell><b>From Date</b></TableCell>
-                <TableCell><b>To Date</b></TableCell>
-                <TableCell><b>Total Days</b></TableCell>
-                <TableCell><b>Reason</b></TableCell>
-                <TableCell><b>Status</b></TableCell>
-                <TableCell align="center"><b>Actions</b></TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {paginatedLeaves.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
-                    No Leave Requests Found.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                paginatedLeaves.map((leave) => {
-                  const days =
-                    Math.ceil(
-                      (new Date(leave.to_date) - new Date(leave.from_date)) /
-                        (1000 * 60 * 60 * 24)
-                    ) + 1;
+      {/* Table grid / Mobile cards */}
+      <Paper elevation={3} sx={{ borderRadius: 2, overflow: "hidden", p: isMobile ? 1.5 : 0 }}>
+        {isMobile ? (
+          paginatedLeaves.length === 0 ? (
+            <Box textAlign="center" py={4}>
+              <Typography color="text.secondary">No Leave Requests Found.</Typography>
+            </Box>
+          ) : (
+            <Box display="flex" flexDirection="column" gap={2}>
+              {paginatedLeaves.map((leave) => {
+                const days =
+                  Math.ceil(
+                    (new Date(leave.to_date) - new Date(leave.from_date)) /
+                      (1000 * 60 * 60 * 24)
+                  ) + 1;
 
-                  return (
-                    <TableRow key={leave.absence_id} hover>
-                      <TableCell>{leave.absence_id}</TableCell>
-                      <TableCell><b>{leave.member_name}</b></TableCell>
-                      <TableCell>{new Date(leave.from_date).toLocaleDateString()}</TableCell>
-                      <TableCell>{new Date(leave.to_date).toLocaleDateString()}</TableCell>
-                      <TableCell>{days} days</TableCell>
-                      <TableCell>{leave.reason || "N/A"}</TableCell>
-                      <TableCell>
+                return (
+                  <Card key={leave.absence_id} variant="outlined" sx={{ borderRadius: 2 }}>
+                    <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
+                      <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1}>
+                        <Box>
+                          <Typography variant="subtitle1" fontWeight="bold">
+                            {leave.member_name}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            Leave ID: #{leave.absence_id}
+                          </Typography>
+                        </Box>
                         <Chip
                           label={leave.status.toUpperCase()}
                           size="small"
@@ -222,42 +214,168 @@ function Leaves() {
                               : "warning"
                           }
                         />
-                      </TableCell>
-                      <TableCell align="center">
-                        {leave.status === "pending" ? (
-                          <Box display="flex" justifyContent="center" gap={1}>
-                            <Tooltip title="Approve">
-                              <IconButton
-                                color="success"
-                                onClick={() => handleApprove(leave.absence_id)}
-                                disabled={actioning}
-                              >
-                                <CheckCircleIcon />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Reject">
-                              <IconButton
-                                color="error"
-                                onClick={() => handleReject(leave.absence_id)}
-                                disabled={actioning}
-                              >
-                                <CancelIcon />
-                              </IconButton>
-                            </Tooltip>
-                          </Box>
-                        ) : (
-                          <Typography variant="body2" color="text.secondary">
-                            Processed
+                      </Box>
+
+                      <Divider sx={{ my: 1.5 }} />
+
+                      <Grid container spacing={1} sx={{ mb: 1.5 }}>
+                        <Grid item xs={6}>
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            From Date
                           </Typography>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  );
-                })
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                          <Typography variant="body2" fontWeight="500">
+                            {new Date(leave.from_date).toLocaleDateString()}
+                          </Typography>
+                        </Grid>
+
+                        <Grid item xs={6}>
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            To Date
+                          </Typography>
+                          <Typography variant="body2" fontWeight="500">
+                            {new Date(leave.to_date).toLocaleDateString()}
+                          </Typography>
+                        </Grid>
+
+                        <Grid item xs={12}>
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            Total Duration
+                          </Typography>
+                          <Typography variant="body2" fontWeight="bold" color="primary.main">
+                            {days} {days === 1 ? "day" : "days"}
+                          </Typography>
+                        </Grid>
+
+                        <Grid item xs={12}>
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            Reason
+                          </Typography>
+                          <Typography variant="body2">
+                            {leave.reason || "N/A"}
+                          </Typography>
+                        </Grid>
+                      </Grid>
+
+                      {leave.status === "pending" && (
+                        <>
+                          <Divider sx={{ my: 1 }} />
+                          <Box display="flex" justifyContent="flex-end" gap={1} pt={0.5}>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              color="success"
+                              startIcon={<CheckCircleIcon />}
+                              onClick={() => handleApprove(leave.absence_id)}
+                              disabled={actioning}
+                            >
+                              Approve
+                            </Button>
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              color="error"
+                              startIcon={<CancelIcon />}
+                              onClick={() => handleReject(leave.absence_id)}
+                              disabled={actioning}
+                            >
+                              Reject
+                            </Button>
+                          </Box>
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </Box>
+          )
+        ) : (
+          <TableContainer sx={{ overflowX: "auto" }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell><b>ID</b></TableCell>
+                  <TableCell><b>Member Name</b></TableCell>
+                  <TableCell><b>From Date</b></TableCell>
+                  <TableCell><b>To Date</b></TableCell>
+                  <TableCell><b>Total Days</b></TableCell>
+                  <TableCell><b>Reason</b></TableCell>
+                  <TableCell><b>Status</b></TableCell>
+                  <TableCell align="center"><b>Actions</b></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {paginatedLeaves.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
+                      No Leave Requests Found.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  paginatedLeaves.map((leave) => {
+                    const days =
+                      Math.ceil(
+                        (new Date(leave.to_date) - new Date(leave.from_date)) /
+                          (1000 * 60 * 60 * 24)
+                      ) + 1;
+
+                    return (
+                      <TableRow key={leave.absence_id} hover>
+                        <TableCell>{leave.absence_id}</TableCell>
+                        <TableCell><b>{leave.member_name}</b></TableCell>
+                        <TableCell>{new Date(leave.from_date).toLocaleDateString()}</TableCell>
+                        <TableCell>{new Date(leave.to_date).toLocaleDateString()}</TableCell>
+                        <TableCell>{days} days</TableCell>
+                        <TableCell>{leave.reason || "N/A"}</TableCell>
+                        <TableCell>
+                          <Chip
+                            label={leave.status.toUpperCase()}
+                            size="small"
+                            color={
+                              leave.status === "approved"
+                                ? "success"
+                                : leave.status === "rejected"
+                                ? "error"
+                                : "warning"
+                            }
+                          />
+                        </TableCell>
+                        <TableCell align="center">
+                          {leave.status === "pending" ? (
+                            <Box display="flex" justifyContent="center" gap={1}>
+                              <Tooltip title="Approve">
+                                <IconButton
+                                  color="success"
+                                  onClick={() => handleApprove(leave.absence_id)}
+                                  disabled={actioning}
+                                >
+                                  <CheckCircleIcon />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Reject">
+                                <IconButton
+                                  color="error"
+                                  onClick={() => handleReject(leave.absence_id)}
+                                  disabled={actioning}
+                                >
+                                  <CancelIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </Box>
+                          ) : (
+                            <Typography variant="body2" color="text.secondary">
+                              Processed
+                            </Typography>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )}
         <TablePagination
           rowsPerPageOptions={[5, 10, 25]}
           component="div"

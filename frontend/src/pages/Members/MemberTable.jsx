@@ -1,6 +1,10 @@
 import {
   Box,
+  Card,
+  CardContent,
   Chip,
+  Divider,
+  Grid,
   IconButton,
   Paper,
   Table,
@@ -12,6 +16,8 @@ import {
   Tooltip,
   Typography,
   TableSortLabel,
+  useMediaQuery,
+  Button,
 } from "@mui/material";
 
 import EditIcon from "@mui/icons-material/Edit";
@@ -26,6 +32,8 @@ function MemberTable({
   sortOrder,
   onSort,
 }) {
+  const isMobile = useMediaQuery("(max-width:767.95px)");
+
   if (members.length === 0) {
     return (
       <Paper sx={{ p: 5, textAlign: "center" }}>
@@ -34,6 +42,103 @@ function MemberTable({
           Click "Add Member" to create your first member.
         </Typography>
       </Paper>
+    );
+  }
+
+  if (isMobile) {
+    return (
+      <Box display="flex" flexDirection="column" gap={2} p={1}>
+        {members.map((member) => {
+          const planName =
+            mealPlans.find((p) => p.plan_id === member.current_plan_id)?.plan_name ||
+            `Plan ID: ${member.current_plan_id}`;
+          const joiningDateStr = member.joining_date
+            ? new Date(member.joining_date).toLocaleDateString()
+            : "-";
+
+          return (
+            <Card key={member.member_id} variant="outlined" sx={{ borderRadius: 2 }}>
+              <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
+                <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1.5}>
+                  <Box>
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      {member.member_name}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      ID: #{member.member_id}
+                    </Typography>
+                  </Box>
+                  <Chip
+                    label={member.status}
+                    color={member.status === "active" ? "success" : "default"}
+                    size="small"
+                  />
+                </Box>
+
+                <Divider sx={{ my: 1.5 }} />
+
+                <Grid container spacing={1} sx={{ mb: 1.5 }}>
+                  <Grid item xs={12}>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Email
+                    </Typography>
+                    <Typography variant="body2" sx={{ wordBreak: "break-all" }}>
+                      {member.email || "-"}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={6}>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Phone
+                    </Typography>
+                    <Typography variant="body2" fontWeight="500">
+                      {member.phone}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={6}>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Meal Plan
+                    </Typography>
+                    <Typography variant="body2" fontWeight="500">
+                      {planName}
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Joining Date
+                    </Typography>
+                    <Typography variant="body2">{joiningDateStr}</Typography>
+                  </Grid>
+                </Grid>
+
+                <Divider sx={{ my: 1 }} />
+
+                <Box display="flex" justifyContent="flex-end" gap={1} pt={0.5}>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    startIcon={<EditIcon />}
+                    onClick={() => onEdit(member)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="error"
+                    startIcon={<DeleteIcon />}
+                    onClick={() => onDelete(member.member_id)}
+                  >
+                    Delete
+                  </Button>
+                </Box>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </Box>
     );
   }
 
@@ -115,4 +220,4 @@ function MemberTable({
   );
 }
 
-export default MemberTable;
+export default MemberTable;

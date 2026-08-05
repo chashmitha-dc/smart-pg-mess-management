@@ -356,3 +356,36 @@ def get_due_billing_members_list(pg_id):
             })
             
     return due_list
+
+
+def resend_bill_email(bill_id):
+    """Resend the bill invoice email to the member for an existing bill."""
+    bill = Bill.query.get(bill_id)
+    if not bill:
+        return error_response("Bill not found", 404)
+
+    member = Member.query.get(bill.member_id)
+    if not member:
+        return error_response("Member not found", 404)
+
+    if not member.email or not member.email.strip():
+        return error_response("Member has no registered email address", 400)
+
+    pg = PG.query.get(member.pg_id)
+    pg_name = pg.pg_name if pg else "SmartPG"
+
+    # Send bill email using existing send_bill_reminder_email utility
+    sent_successfully = send_bill_reminder_email(
+        to_email=member.email.strip(),
+        member_name=member.member_name,
+        amount=float(bill.final_amount),
+        start_date=bill.billing_period_start,
+        end_date=bill.billing_period_end,
+        pg_name=pg_name,
+    )
+
+    if sent_successfully:
+        return success_response("Bill email sent successfully.", status_code=200)
+    else:
+        return error_response("Email could not be sent.", status_code=500)
+

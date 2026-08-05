@@ -47,7 +47,12 @@ function Dashboard() {
       loadDashboard();
     } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.message || "Failed to generate bill");
+      const msg = error.response?.data?.message;
+      if (error.response?.status === 409 || (msg && msg.toLowerCase().includes("already exists"))) {
+        toast.error("Bill already exists for this billing cycle.");
+      } else {
+        toast.error(msg || "Failed to generate bill");
+      }
     } finally {
       setGeneratingBill(false);
     }
@@ -61,7 +66,12 @@ function Dashboard() {
       loadDashboard();
     } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.message || "Failed to generate due bills");
+      const msg = error.response?.data?.message;
+      if (error.response?.status === 409 || (msg && msg.toLowerCase().includes("already exists"))) {
+        toast.error("Bill already exists for this billing cycle.");
+      } else {
+        toast.error(msg || "Failed to generate due bills");
+      }
     } finally {
       setGeneratingBill(false);
     }

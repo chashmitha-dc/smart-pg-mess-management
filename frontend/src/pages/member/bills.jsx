@@ -57,12 +57,18 @@ function MemberBills() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [billsRes, pgRes] = await Promise.all([getBills(), getPGDetails()]);
+      const billsRes = await getBills();
       setBills(billsRes.data.data || []);
+    } catch (error) {
+      console.error("Error loading bills:", error);
+      toast.error("Failed to load invoices");
+    }
+
+    try {
+      const pgRes = await getPGDetails();
       setPg(pgRes.data.data || null);
     } catch (error) {
-      console.error(error);
-      toast.error("Failed to load invoices");
+      console.error("Error loading PG details:", error);
     } finally {
       setLoading(false);
     }

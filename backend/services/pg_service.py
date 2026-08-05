@@ -1,7 +1,8 @@
-from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import get_jwt_identity, get_jwt
 
 from config.database import db
 from models.pg import PG
+from models.member import Member
 
 from utils.response import success_response, error_response
 
@@ -52,9 +53,17 @@ def create_pg(data):
 
 def get_pg():
 
-    owner_id = int(get_jwt_identity())
+    claims = get_jwt()
+    role = claims.get("role", "owner")
+    user_id = int(get_jwt_identity())
 
-    pg = PG.query.filter_by(owner_id=owner_id).first()
+    if role == "member":
+        member = Member.query.get(user_id)
+        if not member:
+            return error_response("Member not found", 404)
+        pg = PG.query.filter_by(pg_id=member.pg_id).first()
+    else:
+        pg = PG.query.filter_by(owner_id=user_id).first()
 
     if not pg:
         return error_response(

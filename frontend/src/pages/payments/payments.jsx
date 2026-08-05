@@ -350,8 +350,8 @@ function Payments() {
                           payment.verification_status === "verified"
                             ? "success"
                             : payment.verification_status === "rejected"
-                            ? "error"
-                            : "warning"
+                              ? "error"
+                              : "warning"
                         }
                       />
                     </Box>
@@ -480,8 +480,8 @@ function Payments() {
                             payment.verification_status === "verified"
                               ? "success"
                               : payment.verification_status === "rejected"
-                              ? "error"
-                              : "warning"
+                                ? "error"
+                                : "warning"
                           }
                         />
                       </TableCell>

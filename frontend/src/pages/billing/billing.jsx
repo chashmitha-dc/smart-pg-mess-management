@@ -31,9 +31,10 @@ import ReceiptIcon from "@mui/icons-material/Receipt";
 import Autocomplete from "@mui/material/Autocomplete";
 import DownloadIcon from "@mui/icons-material/Download";
 import PrintIcon from "@mui/icons-material/Print";
+import EmailIcon from "@mui/icons-material/Email";
 import toast from "react-hot-toast";
 
-import { getBills, generateAllBills, generateMemberBill } from "../../api/billingApi";
+import { getBills, generateAllBills, generateMemberBill, resendBillEmail } from "../../api/billingApi";
 import { getMembers } from "../../api/memberApi";
 
 function Billing() {
@@ -42,6 +43,7 @@ function Billing() {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
+  const [sendingEmailId, setSendingEmailId] = useState(null);
 
   // Search & Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -58,6 +60,19 @@ function Billing() {
   // Invoice details view
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [openInvoiceDialog, setOpenInvoiceDialog] = useState(false);
+
+  const handleResendEmail = async (billId) => {
+    setSendingEmailId(billId);
+    try {
+      await resendBillEmail(billId);
+      toast.success("Bill email sent successfully.");
+    } catch (error) {
+      console.error("Resend email error:", error);
+      toast.error(error.response?.data?.message || "Unable to send email.");
+    } finally {
+      setSendingEmailId(null);
+    }
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -93,7 +108,12 @@ function Billing() {
         loadData();
       } catch (error) {
         console.error(error);
-        toast.error(error.response?.data?.message || "Billing generation failed");
+        const msg = error.response?.data?.message;
+        if (error.response?.status === 409 || (msg && msg.toLowerCase().includes("already exists"))) {
+          toast.error("Bill already exists for this billing cycle.");
+        } else {
+          toast.error(msg || "Billing generation failed");
+        }
       } finally {
         setGenerating(false);
       }
@@ -115,7 +135,12 @@ function Billing() {
       loadData();
     } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.message || "Bill generation failed");
+      const msg = error.response?.data?.message;
+      if (error.response?.status === 409 || (msg && msg.toLowerCase().includes("already exists"))) {
+        toast.error("Bill already exists for this billing cycle.");
+      } else {
+        toast.error(msg || "Bill generation failed");
+      }
     } finally {
       setGenerating(false);
     }
@@ -409,7 +434,17 @@ function Billing() {
 
                     <Divider sx={{ my: 1 }} />
 
-                    <Box display="flex" justifyContent="flex-end" pt={0.5}>
+                    <Box display="flex" justifyContent="flex-end" gap={1} pt={0.5}>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="secondary"
+                        startIcon={<EmailIcon />}
+                        disabled={sendingEmailId === bill.bill_id}
+                        onClick={() => handleResendEmail(bill.bill_id)}
+                      >
+                        {sendingEmailId === bill.bill_id ? "Sending..." : "Resend Email"}
+                      </Button>
                       <Button
                         size="small"
                         variant="outlined"
@@ -484,14 +519,26 @@ function Billing() {
                         />
                       </TableCell>
                       <TableCell align="center">
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          startIcon={<PrintIcon />}
-                          onClick={() => handlePrint(bill)}
-                        >
-                          Print Invoice
-                        </Button>
+                        <Box display="flex" justifyContent="center" gap={1}>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            color="secondary"
+                            startIcon={<EmailIcon />}
+                            disabled={sendingEmailId === bill.bill_id}
+                            onClick={() => handleResendEmail(bill.bill_id)}
+                          >
+                            {sendingEmailId === bill.bill_id ? "Sending..." : "Resend Email"}
+                          </Button>
+                          <Button
+                            size="small"
+                            variant="outlined"
+                            startIcon={<PrintIcon />}
+                            onClick={() => handlePrint(bill)}
+                          >
+                            Print Invoice
+                          </Button>
+                        </Box>
                       </TableCell>
                     </TableRow>
                   ))

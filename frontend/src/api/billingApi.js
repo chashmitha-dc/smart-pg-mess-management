@@ -15,3 +15,8 @@ export const generateMemberBill = async (memberId) => {
 export const generateAllBills = async () => {
   return await api.post("/billing/generate-all");
 };
+
+export const resendBillEmail = async (billId) => {
+  return await api.post(`/billing/resend-email/${billId}`);
+};
+

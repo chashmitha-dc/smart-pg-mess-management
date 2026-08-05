@@ -9,6 +9,7 @@ from services.billing_service import (
     generate_member_bill,
     get_bill,
     get_bills,
+    resend_bill_email,
 )
 
 billing_bp = Blueprint("billing", __name__)
@@ -36,3 +37,10 @@ def list_bills():
 @jwt_required()
 def view_bill(bill_id):
     return get_bill(bill_id)
+
+
+@billing_bp.route("/resend-email/<int:bill_id>", methods=["POST"])
+@jwt_required()
+def resend_bill_email_route(bill_id):
+    return resend_bill_email(bill_id)
+

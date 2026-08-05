@@ -68,9 +68,20 @@ def _update_bill_status(bill):
 
 def create_payment(data):
     """Create a payment entry and update the linked bill."""
-    pg, error = _get_owner_pg()
-    if error:
-        return error
+    claims = get_jwt()
+    role = claims.get("role", "owner")
+    user_id = int(get_jwt_identity())
+
+    if role == "member":
+        member = Member.query.get(user_id)
+        if not member:
+            return error_response("Member not found", 404)
+        pg = PG.query.get(member.pg_id)
+    else:
+        pg = PG.query.filter_by(owner_id=user_id).first()
+
+    if not pg:
+        return error_response("PG not found", 404)
 
     bill_id = data.get("bill_id")
     amount = data.get("amount")
@@ -98,7 +109,11 @@ def create_payment(data):
     if amount_value <= 0:
         return error_response("Amount must be greater than 0", 400)
 
-    bill = Bill.query.join(Member).filter(Bill.bill_id == bill_id, Member.pg_id == pg.pg_id).first()
+    if role == "member":
+        bill = Bill.query.filter(Bill.bill_id == bill_id, Bill.member_id == user_id).first()
+    else:
+        bill = Bill.query.join(Member).filter(Bill.bill_id == bill_id, Member.pg_id == pg.pg_id).first()
+
     if not bill:
         return error_response("Bill not found", 404)
 

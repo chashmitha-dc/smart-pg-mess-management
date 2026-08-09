@@ -122,7 +122,7 @@ def generate_all_bills():
 
 
 def _get_approved_leave_days(member_id, billing_period_start, billing_period_end):
-    """Count approved leave days within the billing period."""
+    """Count approved leave days within the billing period for continuous leaves of 7 or more days."""
     approved_leaves = AbsenceRequest.query.filter(
         AbsenceRequest.member_id == member_id,
         AbsenceRequest.status == "approved",
@@ -133,10 +133,13 @@ def _get_approved_leave_days(member_id, billing_period_start, billing_period_end
     approved_days = 0
 
     for leave in approved_leaves:
-        overlap_start = max(leave.from_date, billing_period_start)
-        overlap_end = min(leave.to_date, billing_period_end)
-        if overlap_start <= overlap_end:
-            approved_days += (overlap_end - overlap_start).days + 1
+        total_leave_duration = (leave.to_date - leave.from_date).days + 1
+        # Deduction applies only for continuous leave of 7 or more days
+        if total_leave_duration >= 7:
+            overlap_start = max(leave.from_date, billing_period_start)
+            overlap_end = min(leave.to_date, billing_period_end)
+            if overlap_start <= overlap_end:
+                approved_days += (overlap_end - overlap_start).days + 1
 
     return approved_days
 
@@ -162,7 +165,7 @@ def _build_bill_payload(bill):
 
 
 def _generate_bill_for_member(member, pg, billing_period_start, billing_period_end):
-    """Generate a bill for a single active member."""
+    """Generate a bill for a single active member with member-specific increment."""
     existing_bill = Bill.query.filter_by(
         member_id=member.member_id,
         billing_period_start=billing_period_start,
@@ -193,7 +196,10 @@ def _generate_bill_for_member(member, pg, billing_period_start, billing_period_e
     if meal_plan.dinner and meal_price.dinner_price is not None:
         daily_cost += float(meal_price.dinner_price)
 
-    monthly_cost = daily_cost * 30
+    member_increment = float(member.billing_increment or 0.0)
+    base_monthly_cost = daily_cost * 30
+    monthly_cost = base_monthly_cost + member_increment
+
     approved_leave_days = _get_approved_leave_days(
         member.member_id,
         billing_period_start,
@@ -340,7 +346,9 @@ def get_due_billing_members_list(pg_id):
             if meal_plan.dinner and meal_price.dinner_price is not None:
                 daily_cost += float(meal_price.dinner_price)
                 
-            monthly_cost = daily_cost * 30
+            member_increment = float(member.billing_increment or 0.0)
+            base_monthly_cost = daily_cost * 30
+            monthly_cost = base_monthly_cost + member_increment
             approved_leave_days = _get_approved_leave_days(
                 member.member_id,
                 billing_period_start,

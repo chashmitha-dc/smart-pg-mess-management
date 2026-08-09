@@ -1,4 +1,5 @@
 from flask_jwt_extended import get_jwt_identity
+from datetime import datetime, time, date
 
 from models.pg import PG
 from models.member import Member
@@ -6,6 +7,8 @@ from models.bill import Bill
 from models.payment import Payment
 from models.complaint import Complaint
 from models.food_prediction import FoodPrediction
+from models.absence_request import AbsenceRequest
+from models.notification import Notification
 
 from utils.response import success_response, error_response
 from services.billing_service import get_due_billing_members_list
@@ -23,6 +26,8 @@ def dashboard_summary():
             data={
                 "total_members": 0,
                 "active_members": 0,
+                "total_members_present": 0,
+                "total_members_absent": 0,
                 "total_revenue": 0.0,
                 "pending_bills": 0,
                 "open_complaints": 0,
@@ -34,6 +39,23 @@ def dashboard_summary():
 
     total_members = Member.query.filter_by(pg_id=pg.pg_id).count()
     active_members = Member.query.filter_by(pg_id=pg.pg_id, status="active").count()
+
+    today_val = date.today()
+    absent_members_count = (
+        Member.query
+        .join(AbsenceRequest, Member.member_id == AbsenceRequest.member_id)
+        .filter(
+            Member.pg_id == pg.pg_id,
+            Member.status == "active",
+            AbsenceRequest.status == "approved",
+            AbsenceRequest.from_date <= today_val,
+            AbsenceRequest.to_date >= today_val,
+        )
+        .with_entities(func.count(func.distinct(Member.member_id)))
+        .scalar()
+    ) or 0
+
+    present_members_count = max(0, active_members - absent_members_count)
 
     total_revenue = (
         Payment.query
@@ -64,9 +86,7 @@ def dashboard_summary():
         .count()
     )
 
-    from datetime import datetime, time, date
     today_start = datetime.combine(date.today(), time.min)
-    from models.notification import Notification
     todays_notifications = (
         Notification.query
         .join(Member)
@@ -100,6 +120,8 @@ def dashboard_summary():
         data={
             "total_members": total_members,
             "active_members": active_members,
+            "total_members_present": present_members_count,
+            "total_members_absent": absent_members_count,
             "total_revenue": float(total_revenue),
             "pending_bills": pending_bills,
             "open_complaints": open_complaints,

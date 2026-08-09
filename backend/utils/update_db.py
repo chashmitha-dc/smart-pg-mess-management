@@ -20,6 +20,7 @@ def update():
             db.session.execute(db.text("ALTER TABLE member ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP;"))
             db.session.execute(db.text("ALTER TABLE owner ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255);"))
             db.session.execute(db.text("ALTER TABLE owner ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP;"))
+            db.session.execute(db.text("ALTER TABLE member ADD COLUMN IF NOT EXISTS billing_increment NUMERIC(10, 2) DEFAULT 0.00;"))
             db.session.commit()
             print("Successfully updated existing tables with new columns.")
         except Exception as e:

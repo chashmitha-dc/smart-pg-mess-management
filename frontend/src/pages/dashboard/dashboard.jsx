@@ -20,6 +20,8 @@ import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import RestaurantIcon from "@mui/icons-material/Restaurant";
 import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import HowToRegIcon from "@mui/icons-material/HowToReg";
+import EventBusyIcon from "@mui/icons-material/EventBusy";
 import { ResponsiveContainer, BarChart, Bar, CartesianGrid, XAxis, YAxis, Tooltip, Legend, AreaChart, Area } from "recharts";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -121,7 +123,7 @@ function Dashboard() {
   const cardStats = [
     {
       title: "Active Residents",
-      value: dashboard?.total_members ?? 0,
+      value: dashboard?.active_members ?? (dashboard?.total_members ?? 0),
       icon: <PeopleIcon sx={{ fontSize: 32 }} />,
       color: "#3b82f6",
       bgGradient: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)",
@@ -129,12 +131,30 @@ function Dashboard() {
       path: "/members",
     },
     {
-      title: "Total Revenue",
-      value: `₹${(dashboard?.total_revenue ?? 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      icon: <PaymentsIcon sx={{ fontSize: 32 }} />,
+      title: "Total Members Present",
+      value: dashboard?.total_members_present ?? (dashboard?.active_members ?? 0),
+      icon: <HowToRegIcon sx={{ fontSize: 32 }} />,
       color: "#10b981",
       bgGradient: "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)",
       borderColor: "#10b981",
+      path: "/absence",
+    },
+    {
+      title: "Total Members Absent",
+      value: dashboard?.total_members_absent ?? 0,
+      icon: <EventBusyIcon sx={{ fontSize: 32 }} />,
+      color: "#8b5cf6",
+      bgGradient: "linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)",
+      borderColor: "#8b5cf6",
+      path: "/absence",
+    },
+    {
+      title: "Total Revenue",
+      value: `₹${(dashboard?.total_revenue ?? 0).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      icon: <PaymentsIcon sx={{ fontSize: 32 }} />,
+      color: "#059669",
+      bgGradient: "linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)",
+      borderColor: "#059669",
       path: "/payments",
     },
     {
@@ -388,11 +408,11 @@ function Dashboard() {
         )}
       </Paper>
 
-      {/* 2-Column CSS Grid of Stats Cards on Mobile (<768px) and 4-Column on Desktop (>=768px) */}
+      {/* Responsive Grid of Stats Cards: 2-Column on Mobile, 3-Column on Tablet/Desktop, 6-Column on Large Screens */}
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: { xs: "repeat(2, minmax(0, 1fr))", md: "repeat(4, minmax(0, 1fr))" },
+          gridTemplateColumns: { xs: "repeat(2, minmax(0, 1fr))", md: "repeat(3, minmax(0, 1fr))", xl: "repeat(6, minmax(0, 1fr))" },
           gap: "16px",
           width: "100%",
           boxSizing: "border-box",
@@ -464,9 +484,11 @@ function Dashboard() {
                   color="text.primary"
                   sx={{
                     letterSpacing: "-0.5px",
-                    fontSize: { xs: "1.05rem", sm: "1.35rem", md: "1.75rem" },
+                    fontSize: { xs: "1.05rem", sm: "1.25rem", md: "1.35rem", lg: "1.5rem" },
                     lineHeight: 1.1,
-                    wordBreak: "break-word",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
                   }}
                 >
                   {stat.value}

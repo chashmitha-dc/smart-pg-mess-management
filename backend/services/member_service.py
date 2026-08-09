@@ -132,6 +132,7 @@ def get_members():
             "joining_date": member.joining_date.isoformat(),
             "billing_start_date": member.billing_start_date.isoformat(),
             "next_billing_date": member.next_billing_date.isoformat(),
+            "billing_increment": float(member.billing_increment or 0.0),
         }
         for member in members
     ]
@@ -162,6 +163,7 @@ def get_member(member_id):
             "joining_date": member.joining_date.isoformat(),
             "billing_start_date": member.billing_start_date.isoformat(),
             "next_billing_date": member.next_billing_date.isoformat(),
+            "billing_increment": float(member.billing_increment or 0.0),
         },
     )
 
@@ -210,6 +212,9 @@ def update_member(member_id, data):
     if "status" in data:
         member.status = data["status"]
 
+    if "billing_increment" in data:
+        member.billing_increment = float(data["billing_increment"] or 0.0)
+
     if "joining_date" in data and data["joining_date"]:
         member.joining_date = date.fromisoformat(data["joining_date"])
 
@@ -229,6 +234,7 @@ def update_member(member_id, data):
             "emergency_contact": member.emergency_contact,
             "current_plan_id": member.current_plan_id,
             "status": member.status,
+            "billing_increment": float(member.billing_increment or 0.0),
         },
     )
 

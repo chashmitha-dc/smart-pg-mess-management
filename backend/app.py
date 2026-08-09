@@ -81,6 +81,11 @@ def home():
 # Auto-create all tables on startup (safe — skips existing tables)
 with app.app_context():
     db.create_all()
+    try:
+        db.session.execute(db.text("ALTER TABLE member ADD COLUMN IF NOT EXISTS billing_increment NUMERIC(10, 2) DEFAULT 0.00;"))
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
 
 
 # Triggering reload for env variables

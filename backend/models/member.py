@@ -33,6 +33,7 @@ class Member(db.Model):
     is_first_login = db.Column(db.Boolean, default=True, nullable=False)
     reset_token = db.Column(db.String(255), nullable=True)
     reset_token_expires = db.Column(db.DateTime, nullable=True)
+    billing_increment = db.Column(db.Numeric(10, 2), nullable=False, default=0.00)
 
     pg = db.relationship("PG", back_populates="members")
     current_plan = db.relationship(

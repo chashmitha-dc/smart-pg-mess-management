@@ -6,7 +6,12 @@ from flask import Blueprint
 from flask_jwt_extended import jwt_required
 from flask import request
 
-from services.owner_service import get_owner_profile, update_owner_profile
+from services.owner_service import (
+    get_owner_profile,
+    update_owner_profile,
+    get_billing_increment_settings,
+    update_billing_increment_settings,
+)
 
 owner_bp = Blueprint("owner", __name__)
 
@@ -22,3 +27,16 @@ def owner_profile():
 def edit_owner_profile():
     data = request.get_json(silent=True) or {}
     return update_owner_profile(data)
+
+
+@owner_bp.route("/billing-increment", methods=["GET"])
+@jwt_required()
+def get_billing_increment():
+    return get_billing_increment_settings()
+
+
+@owner_bp.route("/billing-increment", methods=["POST", "PUT"])
+@jwt_required()
+def update_billing_increment():
+    data = request.get_json(silent=True) or {}
+    return update_billing_increment_settings(data)

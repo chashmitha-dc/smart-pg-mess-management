@@ -53,7 +53,6 @@ function Settings() {
   // Billing Increment state
   const [incrementLoading, setIncrementLoading] = useState(false);
   const [savingIncrement, setSavingIncrement] = useState(false);
-  const [baseAmount, setBaseAmount] = useState(3000);
   const [incrementAmount, setIncrementAmount] = useState(200);
   const [membersList, setMembersList] = useState([]);
   const [selectedMemberIds, setSelectedMemberIds] = useState([]);
@@ -75,7 +74,6 @@ function Settings() {
     try {
       const res = await getBillingIncrementSettings();
       const data = res.data.data;
-      setBaseAmount(data.base_monthly_amount || 3000);
       setIncrementAmount(data.increment_amount || 200);
       const members = data.members || [];
       setMembersList(members);
@@ -391,7 +389,7 @@ function Settings() {
         {tabValue === 2 && (
           <Box component="form" onSubmit={handleSaveIncrement}>
             <Alert severity="info" sx={{ mb: 3 }}>
-              Configure member-specific billing increments. Unselected members will remain at the standard base monthly billing rate of ₹{baseAmount}. Selected members will be billed at ₹{baseAmount} + ₹{incrementAmount || 0} = ₹{baseAmount + (parseFloat(incrementAmount) || 0)}. Leave deductions (₹100/day for 7+ continuous days) remain unaffected.
+              Configure member-specific billing increments. Add an additional amount to the calculated meal-plan bill for selected members. Leave deductions remain calculated from each member's daily meal-plan rate and are unaffected by this increment.
             </Alert>
 
             {incrementLoading ? (
@@ -403,22 +401,13 @@ function Settings() {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="Base Monthly Amount (Standard)"
-                    value={`₹${baseAmount}`}
-                    InputProps={{ readOnly: true }}
-                    helperText="Standard monthly fee for all members"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
                     label="Increment Amount (₹)"
                     type="number"
                     value={incrementAmount}
                     onChange={(e) => setIncrementAmount(e.target.value)}
                     required
                     inputProps={{ min: 0, step: 50 }}
-                    helperText="Amount added to base bill for selected members"
+                    helperText="Additional amount added to the meal-plan bill for selected members"
                   />
                 </Grid>
 
@@ -435,7 +424,7 @@ function Settings() {
                       >
                         <Box>
                           <Typography variant="h6" fontWeight="bold">
-                            Select Members for Increment
+                            Select Members for Billing Increment
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
                             Selected: {selectedMemberIds.length} of {membersList.length} member(s)
@@ -485,9 +474,13 @@ function Settings() {
                           No active members found.
                         </Typography>
                       ) : (
-                        <Grid container spacing={1} sx={{ maxHeight: 300, overflowY: "auto" }}>
+                        <Grid container spacing={1} sx={{ maxHeight: 350, overflowY: "auto" }}>
                           {filteredMembers.map((member) => {
                             const isSelected = selectedMemberIds.includes(member.member_id);
+                            const incVal = parseFloat(incrementAmount) || 0;
+                            const baseAmt = member.base_monthly_amount || 0;
+                            const totalAmt = baseAmt + incVal;
+
                             return (
                               <Grid item xs={12} sm={6} key={member.member_id}>
                                 <Paper
@@ -519,8 +512,8 @@ function Settings() {
                                           <Typography variant="subtitle2" fontWeight="bold">
                                             {member.member_name}
                                           </Typography>
-                                          <Typography variant="caption" color="text.secondary">
-                                            Phone: {member.phone}
+                                          <Typography variant="caption" color="text.secondary" display="block">
+                                            {member.plan_name || "Plan"} (₹{member.daily_cost || 0}/day → Base ₹{baseAmt}/mo)
                                           </Typography>
                                         </Box>
                                       }
@@ -531,8 +524,8 @@ function Settings() {
                                       size="small"
                                       label={
                                         isSelected
-                                          ? `₹${baseAmount + (parseFloat(incrementAmount) || 0)}`
-                                          : `₹${baseAmount}`
+                                          ? `₹${baseAmt} + ₹${incVal} = ₹${totalAmt}/mo`
+                                          : `₹${baseAmt}/mo`
                                       }
                                       color={isSelected ? "primary" : "default"}
                                       variant={isSelected ? "filled" : "outlined"}

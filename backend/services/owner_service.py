@@ -57,6 +57,7 @@ def update_owner_profile(data):
 def get_billing_increment_settings():
     from models.pg import PG
     from models.member import Member
+    from models.meal_price import MealPrice
 
     owner_id = int(get_jwt_identity())
     pg = PG.query.filter_by(owner_id=owner_id).first()
@@ -65,6 +66,7 @@ def get_billing_increment_settings():
         return error_response("PG not found", 404)
 
     active_members = Member.query.filter_by(pg_id=pg.pg_id, status="active").all()
+    meal_price = MealPrice.query.filter_by(pg_id=pg.pg_id, active=True).first()
 
     # Determine standard increment amount (find non-zero increment or default 200)
     current_increment = 200.0
@@ -73,21 +75,38 @@ def get_billing_increment_settings():
             current_increment = float(m.billing_increment)
             break
 
-    members_list = [
-        {
+    members_list = []
+    for m in active_members:
+        daily_cost = 0.0
+        plan_name = "No Plan"
+        if m.current_plan:
+            plan_name = m.current_plan.plan_name
+            if meal_price:
+                if m.current_plan.breakfast and meal_price.breakfast_price is not None:
+                    daily_cost += float(meal_price.breakfast_price)
+                if m.current_plan.lunch and meal_price.lunch_price is not None:
+                    daily_cost += float(meal_price.lunch_price)
+                if m.current_plan.dinner and meal_price.dinner_price is not None:
+                    daily_cost += float(meal_price.dinner_price)
+
+        base_monthly = daily_cost * 30
+        inc_val = float(m.billing_increment or 0.0)
+        is_selected = inc_val > 0
+
+        members_list.append({
             "member_id": m.member_id,
             "member_name": m.member_name,
             "phone": m.phone,
-            "billing_increment": float(m.billing_increment or 0.0),
-            "selected": bool(m.billing_increment and float(m.billing_increment) > 0),
-        }
-        for m in active_members
-    ]
+            "plan_name": plan_name,
+            "daily_cost": daily_cost,
+            "base_monthly_amount": base_monthly,
+            "billing_increment": inc_val,
+            "selected": is_selected,
+        })
 
     return success_response(
         "Billing increment settings fetched successfully",
         data={
-            "base_monthly_amount": 3000.0,
             "increment_amount": current_increment,
             "members": members_list,
         },

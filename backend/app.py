@@ -32,14 +32,9 @@ app.config.from_object(Config)
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "smartpg-dev-secret")
 app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=24)
 
-# Flask-Mail Configuration (set env vars MAIL_USERNAME and MAIL_PASSWORD for Gmail)
-app.config["MAIL_SERVER"]   = os.getenv("MAIL_SERVER", "smtp.gmail.com")
-app.config["MAIL_PORT"]     = int(os.getenv("MAIL_PORT", 587))
-app.config["MAIL_USE_TLS"]  = os.getenv("MAIL_USE_TLS", "true").lower() == "true"
-app.config["MAIL_USE_SSL"]  = os.getenv("MAIL_USE_SSL", "false").lower() == "true"
-app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME", "")
-app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD", "")
-app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_USERNAME", "noreply@smartpg.com")
+# Resend Email Configuration (set env var RESEND_API_KEY for Resend HTTPS API)
+app.config["RESEND_API_KEY"] = os.getenv("RESEND_API_KEY", "")
+app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_DEFAULT_SENDER", "SmartPG <onboarding@resend.dev>")
 
 # Initialize extensions
 CORS(app, resources={r"/api/*": {"origins": [

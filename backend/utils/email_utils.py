@@ -1,22 +1,35 @@
-"""Email utility for SmartPG — sends OTP reset and leave notification emails via Flask-Mail."""
+"""Email utility for SmartPG — sends OTP reset, leave notification, and bill emails via Resend HTTPS API."""
 
-from flask_mail import Mail, Message
-
-mail = Mail()
+import os
+import resend
 
 
 def init_mail(app):
-    """Initialize Flask-Mail with the app."""
-    mail.init_app(app)
+    """Initialize Resend API key with the app context or environment."""
+    api_key = app.config.get("RESEND_API_KEY") or os.getenv("RESEND_API_KEY")
+    if api_key:
+        resend.api_key = api_key
+    else:
+        print("[EMAIL WARNING] RESEND_API_KEY is not configured.")
+
+
+def _get_sender():
+    """Get verified sender address for Resend."""
+    sender = os.getenv("MAIL_DEFAULT_SENDER") or os.getenv("MAIL_USERNAME")
+    if not sender or "@" not in sender or "gmail.com" in sender.lower():
+        sender = "SmartPG <onboarding@resend.dev>"
+    return sender
 
 
 def send_reset_email(to_email, reset_code, user_name="User"):
-    """Send a password reset OTP email."""
+    """Send a password reset OTP email via Resend."""
     try:
-        msg = Message(
-            subject="SmartPG - Password Reset OTP",
-            recipients=[to_email],
-            html=f"""
+        sender = _get_sender()
+        params = {
+            "from": sender,
+            "to": [to_email],
+            "subject": "SmartPG - Password Reset OTP",
+            "html": f"""
             <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto;
                         border: 1px solid #e0e0e0; border-radius: 10px; padding: 30px;">
                 <div style="text-align: center; margin-bottom: 20px;">
@@ -42,8 +55,9 @@ def send_reset_email(to_email, reset_code, user_name="User"):
                 </p>
             </div>
             """,
-        )
-        mail.send(msg)
+        }
+        resend.Emails.send(params)
+        print(f"[EMAIL] Reset OTP email sent via Resend to: {to_email}")
         return True
     except Exception as e:
         print(f"[EMAIL ERROR] Failed to send reset email: {e}")
@@ -58,15 +72,18 @@ def send_reset_sms_fallback(phone, reset_code):
 
 def send_leave_request_email(owner_email, owner_name, member_name, member_room,
                               from_date, to_date, days, reason, pg_name):
-    """Send leave request notification email to the PG owner."""
+    """Send leave request notification email to the PG owner via Resend."""
     reason_text = reason if reason else "No reason provided"
     room_text = f"Room {member_room}" if member_room else "N/A"
+    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
 
     try:
-        msg = Message(
-            subject=f"SmartPG -- New Leave Request from {member_name}",
-            recipients=[owner_email],
-            html=f"""
+        sender = _get_sender()
+        params = {
+            "from": sender,
+            "to": [owner_email],
+            "subject": f"SmartPG -- New Leave Request from {member_name}",
+            "html": f"""
             <div style="font-family: Arial, sans-serif; max-width: 560px; margin: auto;
                         border: 1px solid #e0e0e0; border-radius: 12px; overflow: hidden;">
 
@@ -122,7 +139,7 @@ def send_leave_request_email(owner_email, owner_name, member_name, member_room,
                     </p>
 
                     <div style="text-align: center; margin: 28px 0 10px;">
-                        <a href="http://localhost:5173/leaves"
+                        <a href="{frontend_url}/leaves"
                            style="background: #1976d2; color: white; padding: 13px 32px;
                                   border-radius: 8px; text-decoration: none; font-weight: bold;
                                   font-size: 15px; display: inline-block;">
@@ -139,9 +156,9 @@ def send_leave_request_email(owner_email, owner_name, member_name, member_room,
                 </div>
             </div>
             """,
-        )
-        mail.send(msg)
-        print(f"[EMAIL] Leave request email sent to owner: {owner_email}")
+        }
+        resend.Emails.send(params)
+        print(f"[EMAIL] Leave request email sent via Resend to owner: {owner_email}")
         return True
     except Exception as e:
         # Never crash the app if email fails — just log it
@@ -150,15 +167,18 @@ def send_leave_request_email(owner_email, owner_name, member_name, member_room,
 
 
 def send_bill_reminder_email(to_email, member_name, amount, start_date, end_date, pg_name="SmartPG"):
-    """Send bill invoice reminder email to the member."""
+    """Send bill invoice reminder email to the member via Resend."""
     start_str = start_date.strftime('%d %b %Y')
     end_str = end_date.strftime('%d %b %Y')
+    frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
     
     try:
-        msg = Message(
-            subject=f"SmartPG - New Bill Generated (Rs. {amount:.2f})",
-            recipients=[to_email],
-            html=f"""
+        sender = _get_sender()
+        params = {
+            "from": sender,
+            "to": [to_email],
+            "subject": f"SmartPG - New Bill Generated (Rs. {amount:.2f})",
+            "html": f"""
             <div style="font-family: Arial, sans-serif; max-width: 500px; margin: auto;
                         border: 1px solid #e0e0e0; border-radius: 10px; padding: 30px;">
                 <div style="text-align: center; margin-bottom: 20px;">
@@ -181,7 +201,7 @@ def send_bill_reminder_email(to_email, member_name, amount, start_date, end_date
                 </div>
                 <p>Please log in to the portal to view your statement and make the payment.</p>
                 <div style="text-align: center; margin: 25px 0;">
-                    <a href="http://localhost:5173/bills" 
+                    <a href="{frontend_url}/bills" 
                        style="background: #1a237e; color: white; padding: 10px 20px; 
                               text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
                         View Bill & Pay
@@ -193,9 +213,9 @@ def send_bill_reminder_email(to_email, member_name, amount, start_date, end_date
                 </p>
             </div>
             """,
-        )
-        mail.send(msg)
-        print(f"[EMAIL] Bill reminder email sent to member: {to_email}")
+        }
+        resend.Emails.send(params)
+        print(f"[EMAIL] Bill reminder email sent via Resend to member: {to_email}")
         return True
     except Exception as e:
         print(f"[EMAIL ERROR] Failed to send bill reminder email to {to_email}: {e}")

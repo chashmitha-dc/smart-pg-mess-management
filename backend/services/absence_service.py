@@ -1,7 +1,9 @@
 """Service layer for absence (leave) management."""
 
 from datetime import date
+import threading
 
+from flask import current_app
 from flask_jwt_extended import get_jwt_identity, get_jwt
 
 from config.database import db
@@ -10,6 +12,30 @@ from models.member import Member
 from models.pg import PG
 from utils.response import success_response, error_response
 from utils.email_utils import send_leave_request_email
+
+
+def _send_leave_email_async(app, owner_email, owner_name, member_name, member_room,
+                            from_date_str, to_date_str, days, reason, pg_name):
+    """Background worker to send owner leave notification email using Flask app context."""
+    with app.app_context():
+        try:
+            success = send_leave_request_email(
+                owner_email=owner_email,
+                owner_name=owner_name,
+                member_name=member_name,
+                member_room=member_room,
+                from_date=from_date_str,
+                to_date=to_date_str,
+                days=days,
+                reason=reason,
+                pg_name=pg_name,
+            )
+            if success:
+                print(f"[EMAIL SUCCESS] Leave request email sent to owner: {owner_email}")
+            else:
+                print(f"[EMAIL ERROR] Could not notify owner: Email utility returned False for {owner_email}")
+        except Exception as email_err:
+            print(f"[EMAIL ERROR] Could not notify owner: {email_err}")
 
 
 def _get_owner_pg():
@@ -120,25 +146,31 @@ def create_absence_request(data):
     db.session.add(leave)
     db.session.commit()
 
-    # --- Email owner about new leave request ---
+    # --- Email owner about new leave request in background thread ---
     try:
         pg = PG.query.filter_by(pg_id=member.pg_id).first()
         if pg and pg.owner:
             days = (to_date - from_date).days + 1
-            send_leave_request_email(
-                owner_email=pg.owner.email,
-                owner_name=pg.owner.name,
-                member_name=member.member_name,
-                member_room=getattr(member, 'room_number', None),
-                from_date=from_date.strftime("%d %b %Y"),
-                to_date=to_date.strftime("%d %b %Y"),
-                days=days,
-                reason=reason,
-                pg_name=pg.pg_name,
-            )
+            app = current_app._get_current_object()
+            threading.Thread(
+                target=_send_leave_email_async,
+                args=(
+                    app,
+                    pg.owner.email,
+                    pg.owner.name,
+                    member.member_name,
+                    getattr(member, 'room_number', None),
+                    from_date.strftime("%d %b %Y"),
+                    to_date.strftime("%d %b %Y"),
+                    days,
+                    reason,
+                    pg.pg_name,
+                ),
+                daemon=True,
+            ).start()
     except Exception as email_err:
-        print(f"[EMAIL WARNING] Could not notify owner: {email_err}")
-    # ------------------------------------------
+        print(f"[EMAIL ERROR] Could not notify owner: {email_err}")
+    # ----------------------------------------------------------------
 
     return success_response(
         "Leave request created successfully",

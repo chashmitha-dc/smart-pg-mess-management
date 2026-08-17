@@ -112,7 +112,7 @@ function MemberLeaves() {
       loadLeaves();
     } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.message || "Operation failed");
+      toast.error(error.response?.data?.message || error.message || "Operation failed");
     } finally {
       setSubmitting(false);
     }

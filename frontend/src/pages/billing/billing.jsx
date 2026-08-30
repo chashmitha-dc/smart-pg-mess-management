@@ -34,8 +34,9 @@ import PrintIcon from "@mui/icons-material/Print";
 import EmailIcon from "@mui/icons-material/Email";
 import toast from "react-hot-toast";
 
-import { getBills, generateAllBills, generateMemberBill, resendBillEmail } from "../../api/billingApi";
+import { createManualAbsenceAdjustment } from "../../api/manualAbsenceApi";
 import { getMembers } from "../../api/memberApi";
+import { getBills, generateMemberBill, generateAllBills, resendBillEmail } from "../../api/billingApi";
 
 function Billing() {
   const isMobile = useMediaQuery("(max-width:767.95px)");
@@ -56,7 +57,59 @@ function Billing() {
   // Dialogs
   const [openSingleBillDialog, setOpenSingleBillDialog] = useState(false);
   const [selectedMember, setSelectedMember] = useState(null);
-  
+
+  // New state for manual absence deduction
+  const [absentDays, setAbsentDays] = useState(0);
+  const [reason, setReason] = useState("");
+  const [deductionAmount, setDeductionAmount] = useState(0);
+  const [loadingDeduction, setLoadingDeduction] = useState(false);
+
+  // Recalculate deduction whenever member or absentDays change
+  useEffect(() => {
+    if (selectedMember && selectedMember.daily_rate && absentDays) {
+      const days = parseInt(absentDays, 10);
+      const rate = parseFloat(selectedMember.daily_rate);
+      const amount = days >= 7 ? days * rate : 0;
+      setDeductionAmount(amount);
+    } else {
+      setDeductionAmount(0);
+    }
+  }, [selectedMember, absentDays]);
+
+  const handleAddDeduction = async () => {
+    if (!selectedMember) {
+      toast.error("Select a member for deduction");
+      return;
+    }
+    if (!absentDays || absentDays <= 0) {
+      toast.error("Enter a valid number of absent days");
+      return;
+    }
+    setLoadingDeduction(true);
+    try {
+      const payload = {
+        member_id: selectedMember.member_id,
+        absent_days: parseInt(absentDays, 10),
+        reason: reason || undefined,
+      };
+      const res = await createManualAbsenceAdjustment(payload);
+      toast.success(res.data.message || "Manual absence added");
+      // Refresh bills to show deduction
+      loadData();
+      // Reset fields
+      // Keep selectedMember so they can generate the bill without re-selecting
+      setAbsentDays(0);
+      setReason("");
+      setDeductionAmount(0);
+    } catch (error) {
+      console.error(error);
+      const msg = error.response?.data?.message || "Failed to add deduction";
+      toast.error(msg);
+    } finally {
+      setLoadingDeduction(false);
+    }
+  };
+
   // Invoice details view
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [openInvoiceDialog, setOpenInvoiceDialog] = useState(false);
@@ -201,7 +254,7 @@ function Billing() {
   const executePrint = () => {
     const printContent = document.getElementById("invoice-print-area").innerHTML;
     const originalContent = document.body.innerHTML;
-    
+
     // Simple popup print window to avoid UI disruptions
     const win = window.open("", "_blank");
     win.document.write(`
@@ -378,8 +431,8 @@ function Billing() {
                           bill.status === "paid"
                             ? "success"
                             : bill.status === "partial"
-                            ? "warning"
-                            : "error"
+                              ? "warning"
+                              : "error"
                         }
                       />
                     </Box>
@@ -513,8 +566,8 @@ function Billing() {
                             bill.status === "paid"
                               ? "success"
                               : bill.status === "partial"
-                              ? "warning"
-                              : "error"
+                                ? "warning"
+                                : "error"
                           }
                         />
                       </TableCell>
@@ -570,15 +623,47 @@ function Billing() {
       >
         <DialogTitle fontWeight="bold">Generate Bill for Member</DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
-          <Autocomplete
-            options={members.filter((m) => m.status === "active")}
-            getOptionLabel={(option) => `${option.member_name} (${option.phone})`}
-            value={selectedMember}
-            onChange={(event, newValue) => setSelectedMember(newValue)}
-            renderInput={(params) => (
-              <TextField {...params} label="Select Member" fullWidth variant="outlined" sx={{ mt: 1 }} />
-            )}
-          />
+          {/* Manual Absence Deduction Section */}
+          <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Autocomplete
+              options={members.filter((m) => m.status === "active")}
+              getOptionLabel={(option) => `${option.member_name} (${option.phone})`}
+              value={selectedMember}
+              onChange={(event, newValue) => setSelectedMember(newValue)}
+              renderInput={(params) => (
+                <TextField {...params} label="Select Member" fullWidth variant="outlined" />
+              )}
+            />
+            <TextField
+              label="Absent Days"
+              type="number"
+              fullWidth
+              variant="outlined"
+              value={absentDays}
+              onChange={(e) => setAbsentDays(e.target.value)}
+            />
+            <TextField
+              label="Reason (Optional)"
+              multiline
+              rows={2}
+              fullWidth
+              variant="outlined"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+            />
+            <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+              Calculated Deduction: ₹{deductionAmount.toFixed(2)}
+            </Typography>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={handleAddDeduction}
+              disabled={loadingDeduction}
+            >
+              {loadingDeduction ? "Adding..." : "Add Deduction"}
+            </Button>
+          </Box>
+          {/* Removed duplicate member selection for bill generation */}
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button onClick={() => setOpenSingleBillDialog(false)} color="inherit">
@@ -604,6 +689,7 @@ function Billing() {
           maxWidth="sm"
         >
           <DialogTitle fontWeight="bold">Invoice Preview</DialogTitle>
+
           <DialogContent>
             <div id="invoice-print-area">
               <table class="header-table">
@@ -643,9 +729,8 @@ function Billing() {
                   </Typography>
                   <Box mt={1}>
                     <span
-                      class={`status-badge status-${
-                        selectedInvoice.status === "paid" ? "paid" : "pending"
-                      }`}
+                      class={`status-badge status-${selectedInvoice.status === "paid" ? "paid" : "pending"
+                        }`}
                     >
                       {selectedInvoice.status.toUpperCase()}
                     </span>
@@ -708,8 +793,9 @@ function Billing() {
             </Button>
           </DialogActions>
         </Dialog>
-      )}
-    </Box>
+      )
+      }
+    </Box >
   );
 }
 

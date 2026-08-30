@@ -24,6 +24,7 @@ import Complaints from "../pages/complaints/complaints";
 import Notifications from "../pages/notification/notification";
 import AI from "../pages/ai/ai";
 
+
 // Member Portal Imports
 import MemberLayout from "../layouts/MemberLayout";
 import MemberDashboard from "../pages/member/dashboard";
@@ -40,6 +41,7 @@ function AppRoutes() {
       <Routes>
 
         {/* Public Route */}
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/login" element={<Login />} />
 
         {/* Protected Routes */}
@@ -144,11 +146,7 @@ function AppRoutes() {
           }
         />
 
-        {/* Redirect */}
-        <Route
-          path="/"
-          element={<Navigate to="/dashboard" replace />}
-        />
+
 
         {/* 404 */}
         <Route

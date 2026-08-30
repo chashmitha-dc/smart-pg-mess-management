@@ -43,7 +43,7 @@ function Sidebar({ open, onClose, mobile = false }) {
   const content = (
     <Box sx={{ width: 260, bgcolor: "background.paper", height: "100%" }}>
       <Toolbar>
-        <Typography variant="h6" fontWeight={700} color="primary.main">
+        <Typography variant="h6" fontWeight={700} color="primary.main" sx={{ fontFamily: "'Plus Jakarta Sans', 'Poppins', sans-serif" }}>
           SmartPG
         </Typography>
       </Toolbar>

@@ -20,6 +20,8 @@ Smart Mess Management System is a production-ready full-stack web application fo
 - SQLAlchemy (PostgreSQL)
 - Flask-JWT-Extended
 - Python-dotenv
+- Flask-Mail
+- Resend
 
 ### AI / Machine Learning
 - Scikit-learn

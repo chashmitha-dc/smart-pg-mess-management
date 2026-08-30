@@ -12,6 +12,7 @@ from models.meal_price import MealPrice
 from models.member import Member
 from models.pg import PG
 from models.notification import Notification
+from models.manual_absence_adjustment import ManualAbsenceAdjustment
 from utils.response import error_response, success_response
 from utils.sms_utils import send_bill_notification_sms
 from utils.email_utils import send_bill_reminder_email
@@ -200,13 +201,28 @@ def _generate_bill_for_member(member, pg, billing_period_start, billing_period_e
     base_monthly_cost = daily_cost * 30
     monthly_cost = base_monthly_cost + member_increment
 
+    # Calculate approved leave days and deduction (existing rule)
     approved_leave_days = _get_approved_leave_days(
         member.member_id,
         billing_period_start,
         billing_period_end,
     )
     absence_deduction = approved_leave_days * daily_cost
-    final_amount = monthly_cost - absence_deduction
+
+    # Fetch any manual absence adjustments for this member & period
+    manual_adjustments = ManualAbsenceAdjustment.query.filter_by(
+        member_id=member.member_id,
+        billing_period_start=billing_period_start,
+        billing_period_end=billing_period_end,
+    ).all()
+    manual_deduction_total = sum([adj.deduction_amount for adj in manual_adjustments])
+
+    # Combine deductions: absence (leave) + manual adjustments
+    total_deduction = absence_deduction + manual_deduction_total
+    # Use manual_discount field to reflect manual absence deductions for reporting
+    manual_discount = manual_deduction_total
+
+    final_amount = monthly_cost - total_deduction
 
     new_bill = Bill(
         member_id=member.member_id,
@@ -214,7 +230,7 @@ def _generate_bill_for_member(member, pg, billing_period_start, billing_period_e
         billing_period_end=billing_period_end,
         original_amount=monthly_cost,
         absence_deduction=absence_deduction,
-        manual_discount=0,
+        manual_discount=manual_discount,
         late_fee=0,
         final_amount=final_amount,
         paid_amount=0,
@@ -223,6 +239,11 @@ def _generate_bill_for_member(member, pg, billing_period_start, billing_period_e
     )
 
     db.session.add(new_bill)
+    # Flush to obtain bill ID before linking adjustments
+    db.session.flush()
+    # Link each manual adjustment to this bill
+    for adj in manual_adjustments:
+        adj.bill_id = new_bill.bill_id
 
     # Notify member about generated bill
     notification = Notification(

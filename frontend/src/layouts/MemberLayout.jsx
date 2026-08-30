@@ -260,7 +260,11 @@ function MemberLayout() {
             <Typography
               variant="h6"
               fontWeight="800"
-              sx={{ fontSize: { xs: "1.05rem", sm: "1.25rem" }, letterSpacing: "-0.3px" }}
+              sx={{
+                fontFamily: "'Plus Jakarta Sans', 'Poppins', sans-serif",
+                fontSize: { xs: "1.05rem", sm: "1.25rem" },
+                letterSpacing: "-0.3px",
+              }}
             >
               Member Hub
             </Typography>

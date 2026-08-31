@@ -7,6 +7,7 @@ from flask_jwt_extended import get_jwt_identity
 from werkzeug.security import generate_password_hash
 from config.database import db
 from models.meal_plan import MealPlan
+from models.meal_price import MealPrice
 from models.member import Member
 from models.pg import PG
 from utils.response import error_response, success_response
@@ -29,6 +30,29 @@ def _validate_plan(pg, current_plan_id):
         return error_response("Selected meal plan not found", 404)
 
     return None
+
+
+def _calculate_member_daily_rate(pg, member):
+    if not member or not member.current_plan_id:
+        return 0.0
+
+    meal_plan = MealPlan.query.filter_by(pg_id=pg.pg_id, plan_id=member.current_plan_id).first()
+    if not meal_plan:
+        return 0.0
+
+    meal_price = MealPrice.query.filter_by(pg_id=pg.pg_id, active=True).first()
+    if not meal_price:
+        return 0.0
+
+    daily_cost = 0.00
+    if meal_plan.breakfast and meal_price.breakfast_price is not None:
+        daily_cost += float(meal_price.breakfast_price)
+    if meal_plan.lunch and meal_price.lunch_price is not None:
+        daily_cost += float(meal_price.lunch_price)
+    if meal_plan.dinner and meal_price.dinner_price is not None:
+        daily_cost += float(meal_price.dinner_price)
+
+    return float(daily_cost)
 
 
 def create_member(data):
@@ -133,6 +157,7 @@ def get_members():
             "billing_start_date": member.billing_start_date.isoformat(),
             "next_billing_date": member.next_billing_date.isoformat(),
             "billing_increment": float(member.billing_increment or 0.0),
+            "daily_rate": _calculate_member_daily_rate(pg, member),
         }
         for member in members
     ]
@@ -164,6 +189,7 @@ def get_member(member_id):
             "billing_start_date": member.billing_start_date.isoformat(),
             "next_billing_date": member.next_billing_date.isoformat(),
             "billing_increment": float(member.billing_increment or 0.0),
+            "daily_rate": _calculate_member_daily_rate(pg, member),
         },
     )
 

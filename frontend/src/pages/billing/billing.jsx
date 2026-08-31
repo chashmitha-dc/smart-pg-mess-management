@@ -66,14 +66,17 @@ function Billing() {
 
   // Recalculate deduction whenever member or absentDays change
   useEffect(() => {
-    if (selectedMember && selectedMember.daily_rate && absentDays) {
+    if (selectedMember) {
+      const rate = parseFloat(selectedMember.daily_rate ?? 0);
       const days = parseInt(absentDays, 10);
-      const rate = parseFloat(selectedMember.daily_rate);
-      const amount = days >= 7 ? days * rate : 0;
-      setDeductionAmount(amount);
-    } else {
-      setDeductionAmount(0);
+
+      if (Number.isFinite(rate) && rate > 0 && Number.isFinite(days) && days > 0) {
+        setDeductionAmount(days >= 7 ? days * rate : 0);
+        return;
+      }
     }
+
+    setDeductionAmount(0);
   }, [selectedMember, absentDays]);
 
   const handleAddDeduction = async () => {

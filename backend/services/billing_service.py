@@ -40,39 +40,50 @@ def _get_member_billing_period(member):
 
 def generate_member_bill(member_id):
     """Generate a bill for a single active member."""
-    pg, error = _get_owner_pg()
-    if error:
-        return error
+    try:
+        pg, error = _get_owner_pg()
+        if error:
+            return error
 
-    member = Member.query.filter_by(pg_id=pg.pg_id, member_id=member_id).first()
+        member = Member.query.filter_by(pg_id=pg.pg_id, member_id=member_id).first()
 
-    if not member:
-        return error_response("Member not found", 404)
+        if not member:
+            return error_response("Member not found", 404)
 
-    if member.status != "active":
-        return error_response("Only active members can have bills generated", 400)
+        if member.status != "active":
+            return error_response("Only active members can have bills generated", 400)
 
-    billing_period_start, billing_period_end = _get_member_billing_period(member)
-    bill, bill_error = _generate_bill_for_member(
-        member,
-        pg,
-        billing_period_start,
-        billing_period_end,
-    )
+        billing_period_start, billing_period_end = _get_member_billing_period(member)
+        bill, bill_error = _generate_bill_for_member(
+            member,
+            pg,
+            billing_period_start,
+            billing_period_end,
+        )
 
-    if bill_error:
-        return bill_error
+        if bill_error:
+            return bill_error
 
-    # Advance next_billing_date by 30 days after successful bill generation
-    member.billing_start_date = member.next_billing_date
-    member.next_billing_date = member.next_billing_date + timedelta(days=30)
-    db.session.commit()
+        # Advance next_billing_date by 30 days after successful bill generation
+        # Note: bill creation already committed in _generate_bill_for_member
+        try:
+            member.billing_start_date = member.next_billing_date
+            member.next_billing_date = member.next_billing_date + timedelta(days=30)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print(f"Warning: Failed to update billing dates for member {member_id}: {str(e)}")
+            # Still return success because bill was already created
 
-    return success_response(
-        "Bill generated successfully",
-        data=_build_bill_payload(bill),
-        status_code=201,
-    )
+        return success_response(
+            "Bill generated successfully",
+            data=_build_bill_payload(bill),
+            status_code=201,
+        )
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error generating bill for member {member_id}: {str(e)}")
+        return error_response(f"Bill generation failed: {str(e)}", 500)
 
 
 def generate_all_bills():
@@ -256,26 +267,32 @@ def _generate_bill_for_member(member, pg, billing_period_start, billing_period_e
     )
     db.session.add(notification)
 
-    # Send simulated SMS to member
-    if member.phone:
-        send_bill_notification_sms(
-            phone=member.phone,
-            member_name=member.member_name,
-            amount=final_amount,
-            start_date=billing_period_start,
-            end_date=billing_period_end
-        )
+    # Send simulated SMS to member (non-blocking - don't fail bill if SMS fails)
+    try:
+        if member.phone:
+            send_bill_notification_sms(
+                phone=member.phone,
+                member_name=member.member_name,
+                amount=final_amount,
+                start_date=billing_period_start,
+                end_date=billing_period_end
+            )
+    except Exception as e:
+        print(f"Warning: SMS sending failed for member {member.member_id}: {str(e)}")
 
-    # Send email reminder to member if configured
-    if member.email:
-        send_bill_reminder_email(
-            to_email=member.email,
-            member_name=member.member_name,
-            amount=final_amount,
-            start_date=billing_period_start,
-            end_date=billing_period_end,
-            pg_name=pg.pg_name if pg else "SmartPG"
-        )
+    # Send email reminder to member (non-blocking - don't fail bill if email fails)
+    try:
+        if member.email:
+            send_bill_reminder_email(
+                to_email=member.email,
+                member_name=member.member_name,
+                amount=final_amount,
+                start_date=billing_period_start,
+                end_date=billing_period_end,
+                pg_name=pg.pg_name if pg else "SmartPG"
+            )
+    except Exception as e:
+        print(f"Warning: Email sending failed for member {member.member_id}: {str(e)}")
 
     db.session.commit()
 

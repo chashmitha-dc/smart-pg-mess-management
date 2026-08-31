@@ -3,6 +3,7 @@
 from datetime import date, timedelta
 
 from flask_jwt_extended import get_jwt_identity, get_jwt
+from sqlalchemy.orm import joinedload
 
 from config.database import db
 from models.absence_request import AbsenceRequest
@@ -289,7 +290,8 @@ def get_bills():
     if role == "member":
         member_id = int(get_jwt_identity())
         bills = (
-            Bill.query.filter_by(member_id=member_id)
+            Bill.query.options(joinedload(Bill.member))
+            .filter_by(member_id=member_id)
             .order_by(Bill.billing_period_end.desc())
             .all()
         )
@@ -300,7 +302,8 @@ def get_bills():
                 return success_response("Bills fetched successfully", data=[])
             return error
         bills = (
-            Bill.query.join(Member)
+            Bill.query.options(joinedload(Bill.member))
+            .join(Member)
             .filter(Member.pg_id == pg.pg_id)
             .order_by(Bill.billing_period_end.desc())
             .all()
@@ -318,13 +321,18 @@ def get_bill(bill_id):
 
     if role == "member":
         member_id = int(get_jwt_identity())
-        bill = Bill.query.filter_by(bill_id=bill_id, member_id=member_id).first()
+        bill = (
+            Bill.query.options(joinedload(Bill.member))
+            .filter_by(bill_id=bill_id, member_id=member_id)
+            .first()
+        )
     else:
         pg, error = _get_owner_pg()
         if error:
             return error
         bill = (
-            Bill.query.join(Member)
+            Bill.query.options(joinedload(Bill.member))
+            .join(Member)
             .filter(Bill.bill_id == bill_id, Member.pg_id == pg.pg_id)
             .first()
         )

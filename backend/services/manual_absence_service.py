@@ -13,6 +13,7 @@ from services.billing_service import _get_member_billing_period, _get_owner_pg
 def create_manual_absence_adjustment(member_id, absent_days, reason=None):
     """Owner creates a manual absence deduction for a member.
     Calculates deduction using daily meal rate and 7‑day rule.
+    Allows replacing existing adjustment for the same billing period with different absent_days.
     """
     # Identify owner from JWT
     owner_id = int(get_jwt_identity())
@@ -33,15 +34,30 @@ def create_manual_absence_adjustment(member_id, absent_days, reason=None):
     # Determine billing period for the member
     billing_period_start, billing_period_end = _get_member_billing_period(member)
 
-    # Prevent duplicate adjustment
-    duplicate = ManualAbsenceAdjustment.query.filter_by(
+    # Check if any adjustment already exists for this member & period
+    existing_adjustments = ManualAbsenceAdjustment.query.filter_by(
         member_id=member.member_id,
         billing_period_start=billing_period_start,
-        absent_days=absent_days,
         status="applied",
-    ).first()
-    if duplicate:
-        return error_response("Duplicate manual absence adjustment", 409)
+    ).all()
+    
+    # If an adjustment with the same absent_days exists, return success (idempotent)
+    if existing_adjustments:
+        for adj in existing_adjustments:
+            if adj.absent_days == absent_days and adj.reason == reason:
+                # Already exists with same parameters, return success (no error)
+                return success_response("Manual absence adjustment already exists", data={
+                    "adjustment_id": adj.id,
+                    "member_id": adj.member_id,
+                    "absent_days": adj.absent_days,
+                    "deduction_amount": float(adj.deduction_amount),
+                    "billing_period_start": adj.billing_period_start.isoformat(),
+                    "billing_period_end": adj.billing_period_end.isoformat(),
+                })
+        
+        # If different absent_days, delete old records and create new one
+        for adj in existing_adjustments:
+            db.session.delete(adj)
 
     # Calculate daily rate (same as bill generation)
     meal_plan = MealPlan.query.filter_by(pg_id=pg.pg_id, plan_id=member.current_plan_id).first()
@@ -62,6 +78,7 @@ def create_manual_absence_adjustment(member_id, absent_days, reason=None):
     # Apply 7‑day rule
     deduction_amount = absent_days * daily_cost if absent_days >= 7 else 0.0
 
+    # Create new adjustment
     adjustment = ManualAbsenceAdjustment(
         owner_id=owner_id,
         member_id=member.member_id,
@@ -75,6 +92,7 @@ def create_manual_absence_adjustment(member_id, absent_days, reason=None):
     )
     db.session.add(adjustment)
     db.session.commit()
+    
     return success_response("Manual absence adjustment created", data={
         "adjustment_id": adjustment.id,
         "member_id": adjustment.member_id,

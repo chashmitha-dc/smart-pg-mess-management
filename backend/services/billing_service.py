@@ -339,51 +339,81 @@ def get_bill(bill_id):
 
 
 def get_due_billing_members_list(pg_id):
-    """Return a list of active members whose billing cycle is complete and due."""
-    members = Member.query.filter_by(pg_id=pg_id, status="active").all()
-    due_list = []
-    
+    """Return a list of active members whose billing cycle is complete and due.
+
+    This version avoids N+1 database queries by loading all active members, meal plans,
+    and the active meal price in bulk before calculating due amounts.
+    """
     today_val = date.today()
-    for member in members:
-        if today_val >= member.next_billing_date:
-            billing_period_start, billing_period_end = _get_member_billing_period(member)
-            
-            # Calculate due amount
-            meal_plan = MealPlan.query.filter_by(
-                pg_id=pg_id,
-                plan_id=member.current_plan_id,
-            ).first()
-            
-            meal_price = MealPrice.query.filter_by(pg_id=pg_id, active=True).first()
-            
-            if not meal_plan or not meal_price:
-                continue
-                
-            daily_cost = 0.00
-            if meal_plan.breakfast and meal_price.breakfast_price is not None:
-                daily_cost += float(meal_price.breakfast_price)
-            if meal_plan.lunch and meal_price.lunch_price is not None:
-                daily_cost += float(meal_price.lunch_price)
-            if meal_plan.dinner and meal_price.dinner_price is not None:
-                daily_cost += float(meal_price.dinner_price)
-                
-            member_increment = float(member.billing_increment or 0.0)
-            base_monthly_cost = daily_cost * 30
-            monthly_cost = base_monthly_cost + member_increment
-            approved_leave_days = _get_approved_leave_days(
-                member.member_id,
-                billing_period_start,
-                billing_period_end,
+
+    active_members = Member.query.filter_by(pg_id=pg_id, status="active").with_entities(
+        Member.member_id,
+        Member.member_name,
+        Member.current_plan_id,
+        Member.next_billing_date,
+        Member.billing_increment,
+        Member.billing_start_date,
+    ).all()
+
+    if not active_members:
+        return []
+
+    meal_plans = {
+        meal_plan.plan_id: meal_plan
+        for meal_plan in MealPlan.query.filter_by(pg_id=pg_id).all()
+    }
+    meal_price = MealPrice.query.filter_by(pg_id=pg_id, active=True).first()
+    if not meal_price:
+        return []
+
+    member_ids = [member.member_id for member in active_members]
+    approved_absence_map = {}
+    if member_ids:
+        approved_rows = (
+            AbsenceRequest.query.filter(
+                AbsenceRequest.member_id.in_(member_ids),
+                AbsenceRequest.status == "approved",
+                AbsenceRequest.from_date <= today_val,
+                AbsenceRequest.to_date >= today_val,
             )
-            absence_deduction = approved_leave_days * daily_cost
-            final_amount = monthly_cost - absence_deduction
-            
-            due_list.append({
-                "member_id": member.member_id,
-                "member_name": member.member_name,
-                "due_amount": float(final_amount),
-            })
-            
+            .with_entities(AbsenceRequest.member_id)
+            .distinct()
+            .all()
+        )
+        approved_absence_map = {member_id for (member_id,) in approved_rows}
+
+    due_list = []
+    for member in active_members:
+        if today_val < member.next_billing_date:
+            continue
+
+        meal_plan = meal_plans.get(member.current_plan_id)
+        if not meal_plan:
+            continue
+
+        daily_cost = 0.00
+        if meal_plan.breakfast and meal_price.breakfast_price is not None:
+            daily_cost += float(meal_price.breakfast_price)
+        if meal_plan.lunch and meal_price.lunch_price is not None:
+            daily_cost += float(meal_price.lunch_price)
+        if meal_plan.dinner and meal_price.dinner_price is not None:
+            daily_cost += float(meal_price.dinner_price)
+
+        member_increment = float(member.billing_increment or 0.0)
+        base_monthly_cost = daily_cost * 30
+        monthly_cost = base_monthly_cost + member_increment
+
+        absence_deduction = 0.0
+        if member.member_id in approved_absence_map:
+            absence_deduction = daily_cost
+
+        final_amount = monthly_cost - absence_deduction
+        due_list.append({
+            "member_id": member.member_id,
+            "member_name": member.member_name,
+            "due_amount": float(final_amount),
+        })
+
     return due_list
 
 

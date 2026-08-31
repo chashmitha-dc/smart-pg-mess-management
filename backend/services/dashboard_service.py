@@ -41,19 +41,25 @@ def dashboard_summary():
     active_members = Member.query.filter_by(pg_id=pg.pg_id, status="active").count()
 
     today_val = date.today()
-    absent_members_count = (
-        Member.query
-        .join(AbsenceRequest, Member.member_id == AbsenceRequest.member_id)
-        .filter(
-            Member.pg_id == pg.pg_id,
-            Member.status == "active",
-            AbsenceRequest.status == "approved",
-            AbsenceRequest.from_date <= today_val,
-            AbsenceRequest.to_date >= today_val,
-        )
-        .with_entities(func.count(func.distinct(Member.member_id)))
-        .scalar()
-    ) or 0
+    active_member_ids = (
+        Member.query.filter_by(pg_id=pg.pg_id, status="active")
+        .with_entities(Member.member_id)
+        .all()
+    )
+    active_member_ids = [member_id for (member_id,) in active_member_ids]
+
+    absent_members_count = 0
+    if active_member_ids:
+        absent_members_count = (
+            AbsenceRequest.query.filter(
+                AbsenceRequest.member_id.in_(active_member_ids),
+                AbsenceRequest.status == "approved",
+                AbsenceRequest.from_date <= today_val,
+                AbsenceRequest.to_date >= today_val,
+            )
+            .with_entities(func.count(func.distinct(AbsenceRequest.member_id)))
+            .scalar()
+        ) or 0
 
     present_members_count = max(0, active_members - absent_members_count)
 

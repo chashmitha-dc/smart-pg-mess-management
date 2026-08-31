@@ -227,7 +227,8 @@ def _generate_bill_for_member(member, pg, billing_period_start, billing_period_e
         billing_period_start=billing_period_start,
         billing_period_end=billing_period_end,
     ).all()
-    manual_deduction_total = sum([adj.deduction_amount for adj in manual_adjustments])
+    # Convert Decimal values to float for arithmetic operations
+    manual_deduction_total = sum([float(adj.deduction_amount) for adj in manual_adjustments])
 
     # Combine deductions: absence (leave) + manual adjustments
     total_deduction = absence_deduction + manual_deduction_total

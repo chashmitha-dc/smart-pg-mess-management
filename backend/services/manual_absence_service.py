@@ -8,7 +8,7 @@ from models.manual_absence_adjustment import ManualAbsenceAdjustment
 from utils.response import error_response, success_response
 from models.meal_plan import MealPlan
 from models.meal_price import MealPrice
-from services.billing_service import _get_member_billing_period
+from services.billing_service import _get_member_billing_period, _get_owner_pg
 
 def create_manual_absence_adjustment(member_id, absent_days, reason=None):
     """Owner creates a manual absence deduction for a member.

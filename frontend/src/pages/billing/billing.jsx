@@ -63,6 +63,7 @@ function Billing() {
   const [reason, setReason] = useState("");
   const [deductionAmount, setDeductionAmount] = useState(0);
   const [loadingDeduction, setLoadingDeduction] = useState(false);
+  const [deductionAdded, setDeductionAdded] = useState(false);
 
   // Recalculate deduction whenever member or absentDays change
   useEffect(() => {
@@ -97,13 +98,12 @@ function Billing() {
       };
       const res = await createManualAbsenceAdjustment(payload);
       toast.success(res.data.message || "Manual absence added");
-      // Refresh bills to show deduction
+      // Mark that deduction has been added
+      setDeductionAdded(true);
+      // Refresh bills in background
       loadData();
-      // Reset fields
-      // Keep selectedMember so they can generate the bill without re-selecting
-      setAbsentDays(0);
-      setReason("");
-      setDeductionAmount(0);
+      // Keep all form data so user can see what was added
+      // Don't reset fields - they'll see the deduction applied
     } catch (error) {
       console.error(error);
       const msg = error.response?.data?.message || "Failed to add deduction";
@@ -190,6 +190,10 @@ function Billing() {
       toast.success(`Bill generated successfully for ${selectedMember.member_name}`);
       setOpenSingleBillDialog(false);
       setSelectedMember(null);
+      setAbsentDays(0);
+      setReason("");
+      setDeductionAmount(0);
+      setDeductionAdded(false);
       loadData();
     } catch (error) {
       console.error(error);
@@ -628,6 +632,25 @@ function Billing() {
       >
         <DialogTitle fontWeight="bold">Generate Bill for Member</DialogTitle>
         <DialogContent sx={{ pt: 2 }}>
+          {/* Deduction Added Confirmation */}
+          {deductionAdded && (
+            <Box
+              sx={{
+                mb: 2,
+                p: 2,
+                borderRadius: 1,
+                backgroundColor: "#e8f5e9",
+                border: "1px solid #4caf50",
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+              }}
+            >
+              <Typography variant="body2" sx={{ color: "#2e7d32", fontWeight: "bold" }}>
+                ✓ Deduction Added: {absentDays} days = ₹{deductionAmount.toFixed(2)}
+              </Typography>
+            </Box>
+          )}
           {/* Manual Absence Deduction Section */}
           <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Autocomplete
@@ -638,6 +661,7 @@ function Billing() {
               renderInput={(params) => (
                 <TextField {...params} label="Select Member" fullWidth variant="outlined" />
               )}
+              disabled={deductionAdded}
             />
             <TextField
               label="Absent Days"
@@ -646,6 +670,7 @@ function Billing() {
               variant="outlined"
               value={absentDays}
               onChange={(e) => setAbsentDays(e.target.value)}
+              disabled={deductionAdded}
             />
             <TextField
               label="Reason (Optional)"
@@ -655,23 +680,42 @@ function Billing() {
               variant="outlined"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
+              disabled={deductionAdded}
             />
             <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
               Calculated Deduction: ₹{deductionAmount.toFixed(2)}
             </Typography>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={handleAddDeduction}
-              disabled={loadingDeduction}
-            >
-              {loadingDeduction ? "Adding..." : "Add Deduction"}
-            </Button>
+            {!deductionAdded ? (
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleAddDeduction}
+                disabled={loadingDeduction}
+              >
+                {loadingDeduction ? "Adding..." : "Add Deduction"}
+              </Button>
+            ) : (
+              <Box sx={{ p: 1.5, backgroundColor: "#f5f5f5", borderRadius: 1, textAlign: "center" }}>
+                <Typography variant="body2" sx={{ color: "#666" }}>
+                  Deduction is ready to be applied. Click "Generate" to create the bill with this deduction.
+                </Typography>
+              </Box>
+            )}
           </Box>
           {/* Removed duplicate member selection for bill generation */}
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setOpenSingleBillDialog(false)} color="inherit">
+          <Button 
+            onClick={() => {
+              setOpenSingleBillDialog(false);
+              setDeductionAdded(false);
+              setAbsentDays(0);
+              setReason("");
+              setDeductionAmount(0);
+              setSelectedMember(null);
+            }} 
+            color="inherit"
+          >
             Cancel
           </Button>
           <Button

@@ -100,10 +100,8 @@ function Billing() {
       toast.success(res.data.message || "Manual absence added");
       // Mark that deduction has been added
       setDeductionAdded(true);
-      // Refresh bills in background
-      loadData();
+      // DON'T call loadData() here - wait until bill is generated
       // Keep all form data so user can see what was added
-      // Don't reset fields - they'll see the deduction applied
     } catch (error) {
       console.error(error);
       const msg = error.response?.data?.message || "Failed to add deduction";

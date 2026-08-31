@@ -85,8 +85,10 @@ function Dashboard() {
       setDashboard(dashRes.data.data);
       setPayments(payRes.data.data || []);
     } catch (error) {
-      console.error("Dashboard Error:", error);
-      toast.error("Failed to load dashboard statistics");
+      const status = error?.response?.status || "unknown";
+      const message = error?.response?.data?.message || error?.message || "Unknown API error";
+      console.error("Dashboard Error:", { status, message, url: import.meta.env.VITE_API_URL || "/api" });
+      toast.error(`Dashboard failed: ${status} - ${message}`);
     } finally {
       setLoading(false);
     }

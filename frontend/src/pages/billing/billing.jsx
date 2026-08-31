@@ -134,8 +134,10 @@ function Billing() {
       setBills(billsRes.data.data || []);
       setMembers(membersRes.data.data || []);
     } catch (error) {
-      console.error(error);
-      toast.error("Failed to load billing records");
+      const status = error?.response?.status || "unknown";
+      const message = error?.response?.data?.message || error?.message || "Unknown API error";
+      console.error("Billing load error:", { status, message, url: import.meta.env.VITE_API_URL || "/api" });
+      toast.error(`Billing failed: ${status} - ${message}`);
     } finally {
       setLoading(false);
     }

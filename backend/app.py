@@ -37,14 +37,26 @@ app.config["RESEND_API_KEY"] = os.getenv("RESEND_API_KEY", "")
 app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_DEFAULT_SENDER", "SmartPG <onboarding@resend.dev>")
 
 # Initialize extensions
-CORS(app, resources={r"/api/*": {"origins": [
+allowed_origins = {
     "http://localhost:5173",
     "http://localhost:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
     "https://smart-pg-mess-management-bay.vercel.app",
     "https://smartpg-frontend.vercel.app",
-    "https://*.vercel.app",
-    os.getenv("FRONTEND_URL", ""),
-]}}, supports_credentials=True)
+    "https://www.smartpgmess.site",
+    "https://smartpgmess.site",
+    os.getenv("FRONTEND_URL", "").rstrip("/"),
+}
+allowed_origins = {origin for origin in allowed_origins if origin}
+
+CORS(
+    app,
+    resources={r"/api/*": {"origins": list(allowed_origins)}},
+    supports_credentials=True,
+    allow_headers=["Content-Type", "Authorization"],
+    methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+)
 db.init_app(app)
 jwt = JWTManager(app)
 init_mail(app)

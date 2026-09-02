@@ -169,12 +169,37 @@ function MemberBills() {
     );
   }
 
-  // Construct UPI payment URL dynamically for the QR code
-  const upiId = pg?.upi_id || "payment@smartpg";
-  const getQrUrl = (amount) => {
-    return `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
-      `upi://pay?pa=${upiId}&pn=SmartPG&am=${amount}&cu=INR`
-    )}`;
+  const upiId = pg?.upi_id?.trim() || "";
+  const isValidUpiId = /^[^\s@]+@[^\s@]+$/.test(upiId);
+  const getUpiUrl = (bill) => {
+    const amount = Number(bill.balance_amount);
+    if (!isValidUpiId || !Number.isFinite(amount) || amount <= 0) {
+      return null;
+    }
+
+    return (
+      `upi://pay?pa=${encodeURIComponent(upiId)}` +
+      `&pn=${encodeURIComponent("SmartPG")}` +
+      `&am=${amount.toFixed(2)}` +
+      `&cu=INR` +
+      `&tn=${encodeURIComponent(`Bill ${bill.bill_id}`)}`
+    );
+  };
+  const getQrUrl = (bill) => {
+    const upiUrl = getUpiUrl(bill);
+    return upiUrl
+      ? `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upiUrl)}`
+      : null;
+  };
+
+  const handlePayWithUpi = () => {
+    const upiUrl = payBill && getUpiUrl(payBill);
+    if (!upiUrl) {
+      toast.error("UPI payment is not configured. Please contact the PG owner.");
+      return;
+    }
+
+    window.location.href = upiUrl;
   };
 
   return (
@@ -507,16 +532,38 @@ function MemberBills() {
             <DialogContent sx={{ textAlign: "center" }}>
               <Box my={2}>
                 <Typography variant="body2" color="text.secondary">
-                  Scan QR code below using any UPI App (GPay, PhonePe, Paytm):
+                  Use Pay with UPI on this phone, or scan the QR code from another device.
                 </Typography>
               </Box>
-              <Box my={3} display="flex" justifyContent="center">
-                <img
-                  src={getQrUrl(payBill.balance_amount)}
-                  alt="UPI QR Code"
-                  style={{ border: "1px solid #eee", padding: 10, borderRadius: 8 }}
-                />
-              </Box>
+              {isValidUpiId ? (
+                <>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    color="success"
+                    startIcon={<PaymentsIcon />}
+                    onClick={handlePayWithUpi}
+                    disabled={Number(payBill.balance_amount) <= 0}
+                    sx={{ mb: 2 }}
+                  >
+                    Pay with UPI
+                  </Button>
+                  <Typography variant="caption" color="text.secondary">
+                    OR scan this QR code from another device
+                  </Typography>
+                  <Box my={2} display="flex" justifyContent="center">
+                    <img
+                      src={getQrUrl(payBill)}
+                      alt="UPI QR Code"
+                      style={{ border: "1px solid #eee", padding: 10, borderRadius: 8 }}
+                    />
+                  </Box>
+                </>
+              ) : (
+                <Typography variant="body2" color="error" sx={{ my: 3 }}>
+                  UPI payment is not configured. Please contact the PG owner.
+                </Typography>
+              )}
               <Box mb={3}>
                 <Typography variant="subtitle1" fontWeight="bold">
                   Amount Due: ₹{payBill.balance_amount}

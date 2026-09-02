@@ -92,7 +92,7 @@ def create_payment(data):
     if not bill_id:
         return error_response("Bill ID is required", 400)
 
-    if amount is None:
+    if amount is None and role != "member":
         return error_response("Amount is required", 400)
 
     if not payment_method:
@@ -101,13 +101,14 @@ def create_payment(data):
     if payment_method not in VALID_PAYMENT_METHODS:
         return error_response("Payment method must be one of Cash, UPI, Bank Transfer", 400)
 
-    try:
-        amount_value = Decimal(str(amount))
-    except Exception:
-        return error_response("Invalid amount", 400)
+    if amount is not None:
+        try:
+            amount_value = Decimal(str(amount))
+        except Exception:
+            return error_response("Invalid amount", 400)
 
-    if amount_value <= 0:
-        return error_response("Amount must be greater than 0", 400)
+        if amount_value <= 0:
+            return error_response("Amount must be greater than 0", 400)
 
     if role == "member":
         bill = Bill.query.filter(Bill.bill_id == bill_id, Bill.member_id == user_id).first()
@@ -117,7 +118,30 @@ def create_payment(data):
     if not bill:
         return error_response("Bill not found", 404)
 
-    if amount_value > Decimal(str(bill.balance_amount)):
+    actual_balance = Decimal(str(bill.balance_amount))
+    if actual_balance <= 0:
+        return error_response("Bill is already paid", 400)
+
+    if role == "member" and payment_method == "UPI":
+        if not transaction_reference or not str(transaction_reference).strip():
+            return error_response("Transaction reference is required for UPI payments", 400)
+        if len(str(transaction_reference).strip()) > 100:
+            return error_response("Transaction reference is too long", 400)
+        duplicate_payment = (
+            Payment.query.join(Bill)
+            .join(Member)
+            .filter(
+                Member.pg_id == pg.pg_id,
+                Payment.transaction_id == str(transaction_reference).strip(),
+            )
+            .first()
+        )
+        if duplicate_payment:
+            return error_response("This transaction reference has already been submitted", 409)
+
+    if role == "member":
+        amount_value = actual_balance
+    elif amount_value > actual_balance:
         return error_response("Amount cannot exceed the bill balance", 400)
 
     db_method_map = {
@@ -126,7 +150,7 @@ def create_payment(data):
         "Bank Transfer": "bank_transfer",
     }
     db_payment_method = db_method_map.get(payment_method, payment_method)
-    db_transaction_reference = transaction_reference if transaction_reference else None
+    db_transaction_reference = str(transaction_reference).strip() if transaction_reference else None
 
     new_payment = Payment(
         bill_id=bill.bill_id,
@@ -135,10 +159,6 @@ def create_payment(data):
         transaction_id=db_transaction_reference,
         remarks=remarks,
     )
-
-    bill.paid_amount = Decimal(str(bill.paid_amount)) + amount_value
-    bill.balance_amount = Decimal(str(bill.final_amount)) - Decimal(str(bill.paid_amount))
-    _update_bill_status(bill)
 
     db.session.add(new_payment)
     db.session.commit()
@@ -265,16 +285,17 @@ def update_payment(payment_id, data):
         old_status = payment.verification_status
         if old_status != status:
             payment.verification_status = status
-            # If rejected, deduct from bill's paid amount
-            if status == "rejected" and old_status in {"verified", "pending"}:
-                payment.bill.paid_amount = Decimal(str(payment.bill.paid_amount)) - Decimal(str(payment.amount))
-                payment.bill.balance_amount = Decimal(str(payment.bill.final_amount)) - Decimal(str(payment.bill.paid_amount))
-                _update_bill_status(payment.bill)
-            # If re-verified, add to bill's paid amount
-            elif old_status == "rejected" and status in {"verified", "pending"}:
-                payment.bill.paid_amount = Decimal(str(payment.bill.paid_amount)) + Decimal(str(payment.amount))
-                payment.bill.balance_amount = Decimal(str(payment.bill.final_amount)) - Decimal(str(payment.bill.paid_amount))
-                _update_bill_status(payment.bill)
+            bill = payment.bill
+            paid_amount = Decimal(str(bill.paid_amount))
+            payment_amount = Decimal(str(payment.amount))
+
+            if status == "verified" and old_status != "verified":
+                bill.paid_amount = paid_amount + payment_amount
+            elif old_status == "verified" and status != "verified":
+                bill.paid_amount = max(Decimal("0"), paid_amount - payment_amount)
+
+            bill.balance_amount = Decimal(str(bill.final_amount)) - Decimal(str(bill.paid_amount))
+            _update_bill_status(bill)
 
     db.session.commit()
 
@@ -302,9 +323,12 @@ def delete_payment(payment_id):
 
     bill = payment.bill
 
-    bill.paid_amount = Decimal(str(bill.paid_amount)) - Decimal(str(payment.amount))
-    bill.balance_amount = Decimal(str(bill.final_amount)) - Decimal(str(bill.paid_amount))
-    _update_bill_status(bill)
+    if payment.verification_status == "verified":
+        bill.paid_amount = max(
+            Decimal("0"), Decimal(str(bill.paid_amount)) - Decimal(str(payment.amount))
+        )
+        bill.balance_amount = Decimal(str(bill.final_amount)) - Decimal(str(bill.paid_amount))
+        _update_bill_status(bill)
 
     db.session.delete(payment)
     db.session.commit()
